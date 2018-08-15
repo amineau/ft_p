@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/25 23:15:31 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/20 14:11:34 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 16:05:23 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ int		ft_form(t_format **lst, char **format, va_list ap)
 	return (size);
 }
 
-int		ft_algo(t_format *list, char *format, va_list ap)
+int		ft_algo(int fd, t_format *list, char *format, va_list ap)
 {
 	int	size;
 	int	res;
@@ -73,12 +73,12 @@ int		ft_algo(t_format *list, char *format, va_list ap)
 	{
 		if (*format != '%')
 		{
-			ft_putchar(*(format++));
+			ft_putchar_fd(fd, *(format++));
 			size++;
 		}
 		else if (format[1] == '%')
 		{
-			ft_putchar(format[1]);
+			ft_putchar_fd(fd, format[1]);
 			format += 2;
 			size++;
 		}

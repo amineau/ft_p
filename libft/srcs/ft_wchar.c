@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/03/17 17:41:19 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/20 14:27:11 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 13:21:10 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ int		ft_wint(t_format *lst, va_list ap)
 	blanc = (lst->width <= size) ? 0 : lst->width - 1;
 	if (lst->just == '-')
 	{
-		ft_putwint(w, size);
-		ft_putstr(str = ft_wh(' ', blanc));
+		ft_putwint_fd(lst->fd, w, size);
+		ft_putstr_fd(lst->fd, str = ft_wh(' ', blanc));
 	}
 	else
 	{
-		ft_putstr(str = ft_wh(lst->just, blanc));
-		ft_putwint(w, size);
+		ft_putstr_fd(lst->fd, str = ft_wh(lst->just, blanc));
+		ft_putwint_fd(lst->fd, w, size);
 	}
 	ft_strdel(&str);
 	return (size);

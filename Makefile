@@ -15,7 +15,7 @@ OPATH    = objs
 HPATH    = includes
 LFTHPATH = $(LFTPATH)/includes
 
-CFLAGS = -Wall -Werror -Wextra
+CFLAGS = -Wall -Werror -Wextra -g
 IFLAGS = -I./$(HPATH) -I./$(LFTHPATH)
 LIBS   = -L./$(LFTPATH) -lprt
 
@@ -74,6 +74,6 @@ fclean: clean
 		@echo "$(GREENB)<<--$(WHITE)"
 
 libclean: fclean
-		@make -C $(LFTPATH) fcleann
+		@make -C $(LFTPATH) fclean
 
 re: fclean all

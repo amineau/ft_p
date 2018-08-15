@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/03/17 17:38:37 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/20 17:03:01 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 13:11:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int		ft_float(t_format *lst, va_list ap)
 	if (ft_strcmp(str, "nan") && ft_strcmp(str, "NAN"))
 		str = ft_sign(str, lst->sign);
 	str = ft_justif(str, lst->width, lst->just);
-	ft_putstr(str);
+	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);
 	ft_strdel(&str);
 	return (size);
@@ -42,7 +42,7 @@ int		ft_scienti(t_format *lst, va_list ap)
 	if (ft_strcmp(str, "nan") && ft_strcmp(str, "NAN"))
 		str = ft_sign(str, lst->sign);
 	str = ft_justif(str, lst->width, lst->just);
-	ft_putstr(str);
+	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);
 	ft_strdel(&str);
 	return (size);
@@ -62,7 +62,7 @@ int		ft_octal(t_format *lst, va_list ap)
 		dest = ft_strdup("0");
 	str = ft_strclnjoin(dest, str);
 	str = ft_justif(str, lst->width, lst->just);
-	ft_putstr(str);
+	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);
 	ft_strdel(&str);
 	return (size);
@@ -89,7 +89,7 @@ int		ft_binaire(t_format *lst, va_list ap)
 		str = ft_strclnjoin(dest, str);
 		str = ft_justif(str, lst->width, lst->just);
 	}
-	ft_putstr(str);
+	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);
 	ft_strdel(&str);
 	return (size);
@@ -115,7 +115,7 @@ int		ft_hexa(t_format *lst, va_list ap)
 		str = ft_strclnjoin(dest, str);
 		str = ft_justif(str, lst->width, lst->just);
 	}
-	ft_putstr(str);
+	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);
 	ft_strdel(&str);
 	return (size);

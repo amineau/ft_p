@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/25 13:15:08 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/21 16:46:30 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 13:17:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 
 typedef struct	s_format
 {
+	int				fd;
 	char			just;
 	char			sign;
 	char			conv;
@@ -37,7 +38,8 @@ typedef struct	s_format
 }				t_format;
 
 int				ft_printf(const char *format, ...);
-int				ft_algo(t_format *lst, char *str, va_list ap);
+int				ft_printf_fd(int fd, const char *format, ...);
+int				ft_algo(int fd, t_format *lst, char *str, va_list ap);
 int				ft_listadd_format(t_format *list, t_format **begin);
 int				ft_nbrdigit(uintmax_t nb);
 int				ft_cntwint(unsigned int w);
@@ -82,11 +84,11 @@ char			*ft_lenght_type(char c, char **str);
 char			*ft_zero_justif(char *str, t_format *lst, char *dest);
 wchar_t			*ft_wcharndup(wchar_t *s1, size_t n);
 void			ft_refresh(char **str);
-void			ft_putwint(unsigned int w, int oc);
+void			ft_putwint_fd(int fd, unsigned int w, int oc);
 void			ft_refresh(char **str);
 void			ft_lstdel_format(t_format *lst);
 void			ft_close_lst(t_format **lst, va_list ap);
 void			ft_wildcard(t_format *lst, va_list ap);
-t_format		*ft_listnew_format(char *pourc);
+t_format		*ft_listnew_format(int fd, char *pourc);
 
 #endif

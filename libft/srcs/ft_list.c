@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/25 16:33:15 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/20 14:10:31 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 12:57:58 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int			size_format(char *str)
 	return (0);
 }
 
-t_format	*ft_listnew_format(char *pourc)
+t_format	*ft_listnew_format(int fd, char *pourc)
 {
 	t_format	*list;
 	char		*tmp;
@@ -58,6 +58,7 @@ t_format	*ft_listnew_format(char *pourc)
 	pourc = stock_lenght(&list->lenght, pourc);
 	list->type = *pourc;
 	list->size = 1;
+	list->fd = fd;
 	while (ft_strcmp(pourc, tmp++))
 		list->size++;
 	if (pourc[0])

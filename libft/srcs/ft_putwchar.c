@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/03/11 17:18:47 by amineau           #+#    #+#             */
-/*   Updated: 2016/03/20 14:22:34 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 13:21:45 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,14 +48,14 @@ int		ft_sum(int *t)
 	return (sum);
 }
 
-void	ft_put(wchar_t *w, int *t)
+void	ft_put(int fd, wchar_t *w, int *t)
 {
 	int	i;
 
 	i = 0;
 	while (w[i])
 	{
-		ft_putwint(w[i], t[i]);
+		ft_putwint_fd(fd, w[i], t[i]);
 		i++;
 	}
 }
@@ -70,16 +70,16 @@ int		ft_putwchar(wchar_t *w, t_format *lst)
 	t = ft_cntwchar(&w, lst->precision);
 	size = ft_sum(t);
 	if (lst->width <= size)
-		ft_put(w, t);
+		ft_put(lst->fd, w, t);
 	else if (lst->just == '-')
 	{
-		ft_put(w, t);
-		ft_putstr(str = ft_wh(' ', lst->width - size));
+		ft_put(lst->fd, w, t);
+		ft_putstr_fd(lst->fd, str = ft_wh(' ', lst->width - size));
 	}
 	else
 	{
-		ft_putstr(str = ft_wh(lst->just, lst->width - size));
-		ft_put(w, t);
+		ft_putstr_fd(lst->fd, str = ft_wh(lst->just, lst->width - size));
+		ft_put(lst->fd, w, t);
 	}
 	ft_memdel((void**)&t);
 	size += ft_strlen(str);

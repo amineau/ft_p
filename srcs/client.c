@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/15 01:36:02 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/15 23:16:44 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	usage(char *str)
 {
-	printf("Usage: %s <host> <port>\n", str);
+	ft_printf("Usage: %s <host> <port> [-u <user name> [-p <passwd>]] -\n", str);
 	exit(-1);
 }
 
@@ -40,7 +40,7 @@ struct in_addr	htoaddr(char *name)
 	return(addr);
 }
 
-int		create_client(char *host, int port)
+int		create_client(struct in_addr host, int port)
 {
 	int					sock;
 	struct protoent		*proto;
@@ -52,7 +52,7 @@ int		create_client(char *host, int port)
 	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
-	sin.sin_addr = htoaddr(host);
+	sin.sin_addr = host;
 	if (connect(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
 	{
 		if (errno == EADDRINUSE)
@@ -60,26 +60,48 @@ int		create_client(char *host, int port)
 		else if (errno == ECONNREFUSED)
 			ft_printf("Remote address not listening\n");
 		else
-			ft_printf("Connect error\n");
+			ft_printf("Connect failed\n");
 		exit(-1);
 	}
+	ft_printf("Client connected\n");
 	return(sock);
 }
 
+void	getargs(int ac, char** av, struct s_client_args *ca)
+{
+	char opt;
+
+	if (ac < 3)
+		usage(av[0]);
+	ca->ca_host = htoaddr(av[1]);
+	ca->ca_port = ft_atoi(av[2]);
+	while((opt = (char)getopt(ac, av, "upd")) != -1)
+	{
+		if (opt == 'u')
+			ca->ca_user = av[optind];
+		else if (opt == 'p')
+			ca->ca_pass = av[optind];
+		else if (opt == 'd')
+			ca->ca_dir = av[optind];
+		else
+			usage(av[0]);
+	}
+}
 
 int		main(int ac, char **av)
 {
-	int port;
-	int sock;
-	char	*host;
+	int		sock;
+	char	*buff;
+	int		gnllen;
+	t_client_args	ca;
 
-
-	if (ac != 3)
-		usage(av[0]);
-	port = ft_atoi(av[2]);
-	host = av[1];
-	sock = create_client(host , port);
-	write(sock, "Client connected\n", 17);
+	getargs(ac, av, &ca);
+	sock = create_client(ca.ca_host , ca.ca_port);
+	while((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
+	{
+		ft_printf_fd(sock, "Client send a message : %s\n", buff);
+	}
+	ft_printf("DEBUG : %s\n", strerror(errno));
 	close(sock);
 	return(0);
 }
