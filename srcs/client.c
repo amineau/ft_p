@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/15 23:16:44 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 03:15:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,17 +75,128 @@ void	getargs(int ac, char** av, struct s_client_args *ca)
 		usage(av[0]);
 	ca->ca_host = htoaddr(av[1]);
 	ca->ca_port = ft_atoi(av[2]);
-	while((opt = (char)getopt(ac, av, "upd")) != -1)
+	while ((opt = (char)getopt(ac, av, "upd")) != -1)
 	{
 		if (opt == 'u')
 			ca->ca_user = av[optind];
 		else if (opt == 'p')
 			ca->ca_pass = av[optind];
-		else if (opt == 'd')
-			ca->ca_dir = av[optind];
 		else
 			usage(av[0]);
 	}
+}
+
+int	get_code_command(char *command)
+{
+	int	i;
+
+	i = -1;
+	while (commands_list[++i])
+		if (!ft_strcasecmp(commands_list[i], command))
+			return (i);
+	return (-1);
+}
+
+int	lexer(char *buff, t_client_verbs* cv)
+{
+	char	**split;
+	int		code_command;
+
+	split = ft_strsplit(buff, ' ');
+	if (!split[0])
+		return (-1);
+	else if ((code_command = get_code_command(split[0])) == -1)
+	{
+		ft_printf("Unkwown command : [%s]\nType help for more information\n");
+		return (-1);
+	}
+	cv->cv_verb = split[0];
+	cv->cv_arg = split[1];
+	cv->cv_code = code_command;
+	return (0);
+}
+
+void	put_req_arg(char *cmd)
+{
+	ft_printf("Argument is required for this command [%s]\n", cmd);
+}
+
+void	put_no_req_arg(char *cmd)
+{
+	ft_printf("This command [%s] is used without arguments\n", cmd);
+}
+
+char	*list(t_client_verbs *cv)
+{
+	return (ft_strcjoin(LIST, cv->cv_arg, ' '));
+}
+
+char	*change_workdir(t_client_verbs *cv)
+{
+	char	*cmd;
+
+	if (!cv->cv_arg)
+		cmd = ft_strdup(CHANGE_TO_PARENT_DIR);
+	else
+		cmd = ft_strcjoin(CHANGE_WORKDIR, cv->cv_arg, ' ');
+	return (cmd);
+}
+
+char	*get_file(t_client_verbs *cv)
+{
+	if (!cv->cv_arg)
+	{
+		put_req_arg(cv->cv_verb);
+		return (NULL);
+	}
+	return (ft_strcjoin(RETRIEVE, cv->cv_arg, ' '));
+}
+
+char	*put_file(t_client_verbs *cv)
+{
+	if (!cv->cv_arg)
+	{
+		put_req_arg(cv->cv_verb);
+		return (NULL);
+	}
+	return (ft_strcjoin(STORE, cv->cv_arg, ' '));
+}
+
+char	*print_workdir(t_client_verbs *cv)
+{
+	if (cv->cv_arg)
+	{
+		put_no_req_arg(cv->cv_verb);
+		return (NULL);
+	}
+	return (ft_strdup(PRINT_WORKDIR));
+}
+
+char	*logout(t_client_verbs *cv)
+{
+	if (cv->cv_arg)
+	{
+		put_no_req_arg(cv->cv_verb);
+		return (NULL);
+	}
+	return (ft_strdup(LOGOUT));
+}
+
+char	*help(t_client_verbs *cv)
+{
+	(void)cv;
+	ft_printf("TODO : help command\n");
+	return (NULL);
+}
+
+typedef char *(*t_action)(t_client_verbs*);
+char*	parser(t_client_verbs* cv)
+{
+	t_action	command[7] = {
+		list, change_workdir, get_file, put_file, print_workdir, logout, help
+	};
+
+	return (command[cv->cv_code](cv));
 }
 
 int		main(int ac, char **av)
@@ -94,14 +205,23 @@ int		main(int ac, char **av)
 	char	*buff;
 	int		gnllen;
 	t_client_args	ca;
+	t_client_verbs	cv;
+	char*	cmd;
 
+	ft_printf("%s\n",ft_strcjoin("toto", "tata", ' '));
 	getargs(ac, av, &ca);
 	sock = create_client(ca.ca_host , ca.ca_port);
 	while((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
 	{
-		ft_printf_fd(sock, "Client send a message : %s\n", buff);
+		if (lexer(buff, &cv) == -1)
+			continue;
+		if ((cmd = parser(&cv)))
+		{
+			ft_printf_fd(sock, "%s\r\n", cmd);
+			free(cmd);
+		}
 	}
-	ft_printf("DEBUG : %s\n", strerror(errno));
+	ft_printf("Client disconnected\n");
 	close(sock);
-	return(0);
+	return (0);
 }

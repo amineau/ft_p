@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/23 13:21:26 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/15 12:15:26 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 02:25:57 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void			ft_striteri(char *s, void (*f)(unsigned int, char*));
 char			*ft_strmap(char const *s, char (*f)(char));
 char			*ft_strmapi(char const *s, char (*f)(unsigned int, char));
 char			*ft_strsub(char const *s, unsigned int start, size_t len);
+char			*ft_strcjoin(char const *s1, char const *s2, char c);
 char			*ft_strjoin(char const *s1, char const *s2);
 char			*ft_strclnjoin(char const *s1, char const *s2);
 char			*ft_strcln1join(char const *s1, char const *s2);
