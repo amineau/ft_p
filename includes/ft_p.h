@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 02:12:27 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 18:05:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,27 @@
 // End Debug
 # include "libft.h"
 
+
+# define GENERATE_ENUM(ENUM) ENUM
+# define GENERATE_CODE_STRING(STRING) &#STRING[1]
+# define GENERATE_STRING(STRING) #STRING
+
 # define MAX_PENDING_CONNECTIONS 42
 # define MAX_CLIENT_CONNECTION 8
 
+# define CRLF "\r\n"
+# define LF '\n'
+# define NUL '\0'
+
+# define FTP_EOC CRLF
+
+/********** FTP COMMANDS **********/
 # define USERNAME "USER"
 # define PASSWORD "PASS"
 # define ACCOUNT  "ACCT"
 # define CHANGE_WORKDIR "CWD"
 # define CHANGE_TO_PARENT_DIR "CDUP"
 # define LOGOUT "QUIT"
-
 # define RETRIEVE "RETR"
 # define STORE "STOR" 
 # define RENAME_FROM "RNFR"
@@ -50,10 +61,83 @@
 # define LIST "LIST"
 # define SYSTEM "SYST"
 # define NOOP "NOOP"
+/**********************************/
+
+/*********** FTP CODE *************/
+# define FOREACH_FTP_CODE(FTP_CODE) \
+		 FTP_CODE(_120), \
+		 FTP_CODE(_150), \
+		 FTP_CODE(_200), \
+		 FTP_CODE(_202), \
+		 FTP_CODE(_211), \
+		 FTP_CODE(_214), \
+		 FTP_CODE(_220), \
+		 FTP_CODE(_221), \
+		 FTP_CODE(_226), \
+		 FTP_CODE(_230), \
+		 FTP_CODE(_250), \
+		 FTP_CODE(_257), \
+		 FTP_CODE(_125), \
+		 FTP_CODE(_331), \
+		 FTP_CODE(_332), \
+		 FTP_CODE(_350), \
+		 FTP_CODE(_421), \
+		 FTP_CODE(_425), \
+		 FTP_CODE(_426), \
+		 FTP_CODE(_450), \
+		 FTP_CODE(_451), \
+		 FTP_CODE(_452), \
+		 FTP_CODE(_500), \
+		 FTP_CODE(_501), \
+		 FTP_CODE(_502), \
+		 FTP_CODE(_503), \
+		 FTP_CODE(_504), \
+		 FTP_CODE(_506), \
+		 FTP_CODE(_530), \
+		 FTP_CODE(_532), \
+		 FTP_CODE(_550), \
+		 FTP_CODE(_551), \
+		 FTP_CODE(_552), \
+		 FTP_CODE(_553)
+
+
+typedef enum	e_ftp_code
+{
+    FOREACH_FTP_CODE(GENERATE_ENUM)
+}				t_ftp_code;
+
+static const char *g_ftp_code_str[] = {
+    FOREACH_FTP_CODE(GENERATE_CODE_STRING)
+};
+
+/**********************************/
+
 
 // static pthread_mutex_t	g_mutex_stock = PTHREAD_MUTEX_INITIALIZER;
 
-const char*	commands_list[8] = {
+static const char*	g_ftp_cmd_str[] = {
+	USERNAME,
+	PASSWORD,
+	ACCOUNT,
+	CHANGE_WORKDIR,
+	CHANGE_TO_PARENT_DIR,
+	LOGOUT,
+	RETRIEVE,
+	STORE,
+	RENAME_FROM,
+	RENAME_TO,
+	ABORT,
+	DELETE,
+	REMOVE_DIR,
+	MAKE_DIR,
+	PRINT_WORKDIR,
+	LIST,
+	SYSTEM,
+	NOOP,
+	NUL
+};
+
+static const char*	g_user_cmd_str[] = {
 	"ls",
 	"cd",
 	"get",
@@ -61,8 +145,14 @@ const char*	commands_list[8] = {
 	"pwd",
 	"quit",
 	"help",
-	'\0'
+	NUL
 };
+
+typedef enum	e_bool
+{
+	false,
+	true
+}				t_bool;
 
 typedef enum	e_state
 {
@@ -100,6 +190,10 @@ typedef struct	s_server_verbs
 	t_state	sr_state;
 	char*	user_info;
 }				t_server_verbs;
+
+typedef char *(*t_action)(t_client_verbs*);
+
+char    *ftp_username(t_client_verbs *cv);
 
 
 #endif

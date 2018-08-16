@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 03:15:59 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 18:09:45 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,18 +86,8 @@ void	getargs(int ac, char** av, struct s_client_args *ca)
 	}
 }
 
-int	get_code_command(char *command)
-{
-	int	i;
-
-	i = -1;
-	while (commands_list[++i])
-		if (!ft_strcasecmp(commands_list[i], command))
-			return (i);
-	return (-1);
-}
-
-int	lexer(char *buff, t_client_verbs* cv)
+// TODO : Merge with ftp_lexer (server.c)
+int	user_lexer(const char *buff, t_client_verbs* cv)
 {
 	char	**split;
 	int		code_command;
@@ -105,7 +95,7 @@ int	lexer(char *buff, t_client_verbs* cv)
 	split = ft_strsplit(buff, ' ');
 	if (!split[0])
 		return (-1);
-	else if ((code_command = get_code_command(split[0])) == -1)
+	else if ((code_command = ft_arraystr(g_user_cmd_str, split[0])) == -1)
 	{
 		ft_printf("Unkwown command : [%s]\nType help for more information\n");
 		return (-1);
@@ -189,14 +179,27 @@ char	*help(t_client_verbs *cv)
 	return (NULL);
 }
 
-typedef char *(*t_action)(t_client_verbs*);
-char*	parser(t_client_verbs* cv)
+// TODO : Merge with ftp_parser (server.c)
+char*	user_parser(t_client_verbs* cv)
 {
-	t_action	command[7] = {
+	t_action	command[] = {
 		list, change_workdir, get_file, put_file, print_workdir, logout, help
 	};
 
 	return (command[cv->cv_code](cv));
+}
+
+int		send_to_remote(int sock, char* cmd)
+{
+	int	nb_writed_char;
+
+	nb_writed_char = ft_printf_fd(sock, "%s%s", cmd, FTP_EOC);
+	return nb_writed_char;
+}
+
+void	print_to_client(char *cmd)
+{
+	ft_printf("%s ---->%c", cmd, LF);
 }
 
 int		main(int ac, char **av)
@@ -208,20 +211,26 @@ int		main(int ac, char **av)
 	t_client_verbs	cv;
 	char*	cmd;
 
-	ft_printf("%s\n",ft_strcjoin("toto", "tata", ' '));
 	getargs(ac, av, &ca);
 	sock = create_client(ca.ca_host , ca.ca_port);
 	while((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
 	{
-		if (lexer(buff, &cv) == -1)
+		if (user_lexer(buff, &cv) == -1)
 			continue;
-		if ((cmd = parser(&cv)))
+		if ((cmd = user_parser(&cv)))
 		{
-			ft_printf_fd(sock, "%s\r\n", cmd);
+			send_to_remote(sock, cmd);
+			print_to_client(cmd);
 			free(cmd);
 		}
 	}
 	ft_printf("Client disconnected\n");
 	close(sock);
+
+	// TODO : Split .h to remove these lines
+	(void)g_user_cmd_str;
+	(void)g_ftp_cmd_str;
+	(void)g_ftp_code_str;
+
 	return (0);
 }

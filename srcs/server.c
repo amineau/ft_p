@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/15 22:41:08 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 18:09:37 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,15 +71,34 @@ int		open_client(int sock)
 	return (cs);
 }
 
-size_t	lexer(char ***tokens, const char *buff)
+// TODO : Merge with user_lexer (client.c)
+int	ftp_lexer(const char *buff, t_client_verbs* cv)
 {
-	size_t	i;
+	char**	split;
+	int		code_command;
 
-	i = 0;
-	*tokens = ft_strsplit(buff, ' ');
-	while (tokens[i++])
-		;
-	return i;
+	split = ft_strsplit(buff, ' ');
+	if (!split[0])
+		return (-1);
+	else if ((code_command = ft_arraystr(g_ftp_cmd_str, split[0])) == -1)
+	{
+		ft_printf("Unkwown command : [%s]\nType help for more information\n");
+		return (-1);
+	}
+	cv->cv_verb = split[0];
+	cv->cv_arg = split[1];
+	cv->cv_code = code_command;
+	return (0);
+}
+
+// TODO : Merge with user_parser (client.c)
+char*	ftp_parser(t_client_verbs* cv)
+{
+	t_action	command[] = {
+		ftp_username, ftp_username
+	};
+
+	return (command[cv->cv_code](cv));
 }
 
 void	listen_clients(int sock)
@@ -88,7 +107,7 @@ void	listen_clients(int sock)
 	int		r;
 	char	buff[1024];
 	pid_t	pid;
-	char	**tokens;
+	t_client_verbs	cv;
 
 	while(1)
 	{
@@ -98,11 +117,11 @@ void	listen_clients(int sock)
 		while((r = recv(cs, buff, 1023, 0)) > 0)
 		{
 			buff[r] = '\0';
-			lexer(&tokens, buff);
+			ftp_lexer(buff, &cv);
+
 			ft_printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
-			ft_printf("tokens [0] : %s\n", tokens[0]);
 		}
-		ft_printf("%s\n", strerror(errno));
+		ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
 		close(cs);
 	}
 }
@@ -118,5 +137,11 @@ int		main(int ac, char **av)
 	sock = create_server(port);
 	listen_clients(sock);
 	close(sock);
+
+	// TODO : Split .h to remove these lines
+	(void)g_user_cmd_str;
+	(void)g_ftp_cmd_str;
+	(void)g_ftp_code_str;
+
 	return(0);
 }

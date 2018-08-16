@@ -3,7 +3,8 @@ CLIENT_NAME = client
 
 CC = gcc
 
-SERVER_SRCS = server.c
+SERVER_SRCS = server.c ftp_action_1.c # ftp_action_2.c ftp_action_3.c \
+			  ftp_action_4.c
 CLIENT_SRCS = client.c
 
 
@@ -15,7 +16,7 @@ OPATH    = objs
 HPATH    = includes
 LFTHPATH = $(LFTPATH)/includes
 
-CFLAGS = -Wall -Werror -Wextra -g
+CFLAGS = -Wall -Wextra -g # TODO : Adding -Werror
 IFLAGS = -I./$(HPATH) -I./$(LFTHPATH)
 LIBS   = -L./$(LFTPATH) -lprt
 

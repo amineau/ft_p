@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/23 13:21:26 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 02:25:57 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/16 15:37:32 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ char			*ft_strnchr(const char *s, int c, int n);
 char			*ft_strrchr(const char *s, int c);
 char			*ft_strstr(const char *s1, const char *s2);
 char			*ft_strnstr(const char *s1, const char *s2, size_t n);
+int				ft_arraystr(const char **array, const char* str);
 int				ft_strcmp(const char *s1, const char *s2);
 int				ft_strcasecmp(const char *s1, const char *s2);
 int				ft_strncmp(const char *s1, const char *s2, size_t n);
