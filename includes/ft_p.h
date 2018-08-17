@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 18:05:31 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/17 07:19:44 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,23 +22,19 @@
 # include <arpa/inet.h>
 # include <errno.h>
 # include <pthread.h>
+# include <security/pam_appl.h>
+# include <security/pam_misc.h>
 
 // Debug
 # include <string.h>
 // End Debug
 # include "libft.h"
 
-
-# define GENERATE_ENUM(ENUM) ENUM
-# define GENERATE_CODE_STRING(STRING) &#STRING[1]
-# define GENERATE_STRING(STRING) #STRING
-
 # define MAX_PENDING_CONNECTIONS 42
 # define MAX_CLIENT_CONNECTION 8
 
 # define CRLF "\r\n"
 # define LF '\n'
-# define NUL '\0'
 
 # define FTP_EOC CRLF
 
@@ -64,52 +60,24 @@
 /**********************************/
 
 /*********** FTP CODE *************/
-# define FOREACH_FTP_CODE(FTP_CODE) \
-		 FTP_CODE(_120), \
-		 FTP_CODE(_150), \
-		 FTP_CODE(_200), \
-		 FTP_CODE(_202), \
-		 FTP_CODE(_211), \
-		 FTP_CODE(_214), \
-		 FTP_CODE(_220), \
-		 FTP_CODE(_221), \
-		 FTP_CODE(_226), \
-		 FTP_CODE(_230), \
-		 FTP_CODE(_250), \
-		 FTP_CODE(_257), \
-		 FTP_CODE(_125), \
-		 FTP_CODE(_331), \
-		 FTP_CODE(_332), \
-		 FTP_CODE(_350), \
-		 FTP_CODE(_421), \
-		 FTP_CODE(_425), \
-		 FTP_CODE(_426), \
-		 FTP_CODE(_450), \
-		 FTP_CODE(_451), \
-		 FTP_CODE(_452), \
-		 FTP_CODE(_500), \
-		 FTP_CODE(_501), \
-		 FTP_CODE(_502), \
-		 FTP_CODE(_503), \
-		 FTP_CODE(_504), \
-		 FTP_CODE(_506), \
-		 FTP_CODE(_530), \
-		 FTP_CODE(_532), \
-		 FTP_CODE(_550), \
-		 FTP_CODE(_551), \
-		 FTP_CODE(_552), \
-		 FTP_CODE(_553)
-
-
 typedef enum	e_ftp_code
 {
-    FOREACH_FTP_CODE(GENERATE_ENUM)
-}				t_ftp_code;
+	_100, _120, _125, _150,
+	_200, _202, _211, _214, _220, _221, _226, _230, _250, _257,
+	_331, _332, _350,
+	_421, _425, _426, _430, _450, _451, _452,
+	_500, _501, _502, _503, _504, _506, _530, _532, _550, _551, _552, _553
+}				t_ftp_code_enum;
 
 static const char *g_ftp_code_str[] = {
-    FOREACH_FTP_CODE(GENERATE_CODE_STRING)
+	"100", "120", "125", "150",
+	"200", "202", "211", "214", "220", "221", "226", "230", "250", "257",
+	"331", "332", "350",
+	"421", "425", "426", "430", "450", "451", "452",
+	"500", "501", "502", "503", "504", "506", "530", "532",
+	"550", "551", "552", "553",
+	NULL
 };
-
 /**********************************/
 
 
@@ -134,7 +102,7 @@ static const char*	g_ftp_cmd_str[] = {
 	LIST,
 	SYSTEM,
 	NOOP,
-	NUL
+	NULL
 };
 
 static const char*	g_user_cmd_str[] = {
@@ -145,7 +113,7 @@ static const char*	g_user_cmd_str[] = {
 	"pwd",
 	"quit",
 	"help",
-	NUL
+	NULL
 };
 
 typedef enum	e_bool
@@ -156,7 +124,7 @@ typedef enum	e_bool
 
 typedef enum	e_state
 {
-	POS_TEMP,
+	POS_TMP,
 	POS_DEF,
 	POS_INT,
 	NEG_TMP,
@@ -169,31 +137,58 @@ typedef struct	s_client_args
 	int				ca_port;
 	char*			ca_user;
 	char*			ca_pass;
+	char*			ca_wdir;
 }				t_client_args;
 
 typedef struct	s_server_args
 {
-	int				ca_port;
-	char*			ca_dir;
+	int		sa_port;
+	char*	sa_root;
 }				t_server_args;
 
 typedef struct	s_client_verbs
 {
-	char*	cv_verb;
-	char*	cv_arg;
-	int		cv_code;
+	char*			cv_verb;
+	char*			cv_arg;
+	int				cv_code;
+	pam_handle_t*	cv_pamh;
 }				t_client_verbs;
 
 typedef struct	s_server_verbs
 {
-	char*	sr_code;
-	t_state	sr_state;
-	char*	user_info;
+	t_ftp_code_enum	sr_code;
+	t_state			sr_state;
+	char*			user_info;
 }				t_server_verbs;
 
-typedef char *(*t_action)(t_client_verbs*);
+typedef char			*(*t_client_action)(t_client_verbs*);
+typedef t_server_verbs	(*t_server_action)(t_client_verbs*);
 
-char    *ftp_username(t_client_verbs *cv);
 
+char*			ft_getcwd(void);
+char*			get_root(void);
+char*			get_wdir(void);
+
+t_server_verbs  cmd_not_implemented(void);
+t_server_verbs  cmd_username(t_client_verbs *cv);
+t_server_verbs  cmd_password(t_client_verbs *cv);
+t_server_verbs  cmd_account(t_client_verbs *cv);
+t_server_verbs	cmd_change_workdir(t_client_verbs *cv);
+t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv);
+t_server_verbs	cmd_logout(t_client_verbs *cv);
+t_server_verbs	cmd_retrieve(t_client_verbs *cv);
+t_server_verbs	cmd_store(t_client_verbs *cv);
+t_server_verbs	cmd_rename_from(t_client_verbs *cv);
+t_server_verbs	cmd_rename_to(t_client_verbs *cv);
+t_server_verbs	cmd_abort(t_client_verbs *cv);
+t_server_verbs	cmd_delete(t_client_verbs *cv);
+t_server_verbs	cmd_remove_dir(t_client_verbs *cv);
+t_server_verbs	cmd_make_dir(t_client_verbs *cv);
+t_server_verbs	cmd_print_workdir(t_client_verbs *cv);
+t_server_verbs	cmd_list(t_client_verbs *cv);
+t_server_verbs	cmd_system(t_client_verbs *cv);
+t_server_verbs	cmd_noop(t_client_verbs *cv);
+
+int				response_to_client(int sock, t_ftp_code_enum code, char *description);
 
 #endif

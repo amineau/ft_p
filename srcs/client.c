@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 18:09:45 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/17 01:50:12 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ char	*help(t_client_verbs *cv)
 // TODO : Merge with ftp_parser (server.c)
 char*	user_parser(t_client_verbs* cv)
 {
-	t_action	command[] = {
+	t_client_action	command[] = {
 		list, change_workdir, get_file, put_file, print_workdir, logout, help
 	};
 

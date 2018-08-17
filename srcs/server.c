@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/16 18:09:37 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/17 07:20:40 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	usage(char *str)
 {
-	ft_printf("Usage: %s <port> [-d directory path]\n", str);
+	ft_printf("Usage: %s <port> [-r <root directory>]\n", str);
 	exit(-1);
 }
 
@@ -58,6 +58,7 @@ int		open_client(int sock)
 	struct sockaddr_in	csin;
 	unsigned int		cslen;
 
+	errno = 0;
 	if ((cs = accept(sock, (struct sockaddr *)&csin, &cslen)) == -1)
 	{
 		if (errno == EBADF)
@@ -65,39 +66,47 @@ int		open_client(int sock)
 		else if (errno == ECONNABORTED)
 			ft_printf("The connection has been aborted\n");
 		else
-			ft_printf("Accept failed : %s\n", strerror(errno));
-		exit(-1);
+			ft_printf("Accept failed\n\terrno : %d\n\terror : %s\n", errno, strerror(errno));
 	}
+	response_to_client(cs, _220, "Server available for new user");
 	return (cs);
 }
 
 // TODO : Merge with user_lexer (client.c)
-int	ftp_lexer(const char *buff, t_client_verbs* cv)
+t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv)
 {
-	char**	split;
-	int		code_command;
+	char**			split;
+	int				code_command;
+	t_server_verbs	sv;
 
 	split = ft_strsplit(buff, ' ');
-	if (!split[0])
-		return (-1);
-	else if ((code_command = ft_arraystr(g_ftp_cmd_str, split[0])) == -1)
+	cv->cv_verb = ft_strrtrim(split[0]);
+	printf("SPLIT DEBUG : [%s]\n", cv->cv_verb);
+	if (!cv->cv_verb || (code_command = ft_arraystr(g_ftp_cmd_str, cv->cv_verb)) == -1)
 	{
-		ft_printf("Unkwown command : [%s]\nType help for more information\n");
-		return (-1);
+		sv.sr_code = _500;
+		sv.sr_state = NEG_DEF;
+		sv.user_info = "Unknown command";
+		return (sv);
 	}
-	cv->cv_verb = split[0];
-	cv->cv_arg = split[1];
+	cv->cv_arg = ft_strrtrim(split[1]);
 	cv->cv_code = code_command;
-	return (0);
+	sv.sr_code = _100;
+	sv.sr_state = POS_TMP;
+	sv.user_info = "";
+	return (sv);
 }
 
 // TODO : Merge with user_parser (client.c)
-char*	ftp_parser(t_client_verbs* cv)
+t_server_verbs	ftp_parser(t_client_verbs* cv)
 {
-	t_action	command[] = {
-		ftp_username, ftp_username
+	t_server_action	command[] = {
+		cmd_username, cmd_password, cmd_account, cmd_change_workdir,
+		cmd_change_to_parent_dir, cmd_logout, cmd_retrieve, cmd_store,
+		cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir,
+		cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_noop
 	};
-
+	printf("code : %d\nstr : %s\n", cv->cv_code, g_ftp_cmd_str[cv->cv_code]);
 	return (command[cv->cv_code](cv));
 }
 
@@ -106,35 +115,76 @@ void	listen_clients(int sock)
 	int		cs;
 	int		r;
 	char	buff[1024];
-	pid_t	pid;
+	// pid_t	pid;
 	t_client_verbs	cv;
+	t_server_verbs	sv;
 
 	while(1)
 	{
 		cs = open_client(sock);
 		ft_printf("socket : %d\nclient socket : %d\n", sock, cs);
-		pid = fork();
+		// pid = fork();
 		while((r = recv(cs, buff, 1023, 0)) > 0)
 		{
 			buff[r] = '\0';
-			ftp_lexer(buff, &cv);
+			ft_printf("received %d bytes : [%s]\n", r, buff);
 
-			ft_printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
+			sv = ftp_lexer(buff, &cv);
+			if (sv.sr_code != _100)
+				response_to_client(cs, sv.sr_code, sv.user_info);
+			if (sv.sr_state == POS_TMP)
+			{
+				sv = ftp_parser(&cv);
+				response_to_client(cs, sv.sr_code, sv.user_info);
+			}
+
+			// ft_printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
 		}
-		ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
+		// ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
+		ft_printf("Socket finished with %s\n\trecv : %d\n", strerror(errno), r);
 		close(cs);
+	}
+}
+
+void	getargs(int ac, char** av, struct s_server_args *sa)
+{
+	char opt;
+
+	if (ac < 2)
+		usage(av[0]);
+	sa->sa_port = ft_atoi(av[1]);
+	sa->sa_root = ft_getcwd();
+	while ((opt = (char)getopt(ac, av, "r")) != -1)
+	{
+		if (opt == 'r')
+			sa->sa_root = av[optind];
+		else
+			usage(av[0]);
 	}
 }
 
 int		main(int ac, char **av)
 {
-	int port;
-	int sock;
+	t_server_args	sa;
+	int 			sock;
 
 	if (ac < 2)
 		usage(av[0]);
-	port = ft_atoi(av[1]);
-	sock = create_server(port);
+	getargs(ac, av, &sa);
+	if (chdir(sa.sa_root) == -1)
+	{
+		if (errno == EACCES)
+			ft_printf("%s : Permission denied\n", sa.sa_root);
+		else if (errno == ENOTDIR)
+			ft_printf("%s : Not a directory\n", sa.sa_root);
+		else if (errno == ENOENT)
+			ft_printf("%s : No such file or directory\n", sa.sa_root);
+		else
+			ft_printf("chdir failed\n");
+		exit(-1);
+	}
+	(void)get_root();
+	sock = create_server(sa.sa_port);
 	listen_clients(sock);
 	close(sock);
 

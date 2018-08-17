@@ -6,7 +6,7 @@
 #    By: amineau <amineau@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/11/23 15:32:27 by amineau           #+#    #+#              #
-#    Updated: 2018/08/16 15:35:48 by amineau          ###   ########.fr        #
+#    Updated: 2018/08/17 03:34:50 by amineau          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,8 @@ SRCS += ft_putchar.c ft_putstr.c ft_putendl.c ft_putnbr.c ft_strlen.c \
 		ft_min.c ft_max.c ft_putnbrendl.c ft_strclnjoin.c ft_strndup.c \
 		get_next_line.c ft_abs.c ft_strcasecmp.c ft_strnchr.c ft_itoa_base.c \
 		ft_power.c ft_strcln1join.c ft_itoa_unsi.c ft_itoa_unsi_base.c \
-		ft_strcln2join.c ft_atoi_base.c ft_atol.c ft_strcjoin.c ft_arraystr.c
+		ft_strcln2join.c ft_atoi_base.c ft_atol.c ft_strcjoin.c ft_arraystr.c \
+		ft_arrayjoin.c ft_strrtrim.c
 
 SRCDIR = srcs
 OBJDIR = objs
