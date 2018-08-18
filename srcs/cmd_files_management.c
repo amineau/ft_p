@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 14:29:50 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 04:31:18 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_server_verbs	cmd_print_workdir(t_client_verbs *cv)
 {
 	t_server_verbs	sv;
 	char*			wdir;
-	char			buff[1024];
+	char			buff[BUFF_SIZE];
 
 	if (cv->cv_arg)
 	{

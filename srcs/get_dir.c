@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 05:56:41 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 07:17:59 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 04:31:43 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,14 @@
 char*	ft_getcwd(void)
 {
 	size_t	len;
-	size_t	buff_size;
 	char*	cwd;
 	char*	str;
 
-	buff_size = 1024;
-	len = buff_size;
+	len = BUFF_SIZE;
 	str = (char*)malloc(sizeof(char) * len);
 	while ((cwd = getcwd(str, len)) == NULL && errno == ERANGE)
 	{
-		len += buff_size;
+		len += BUFF_SIZE;
 		// TODO : ft_realloc
 		str = realloc(str, len);
 	}

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 03:31:05 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 04:30:46 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,13 +110,13 @@ t_server_verbs	ftp_parser(t_client_verbs* cv)
 	return (command[cv->cv_code](cv));
 }
 
-int		received(int fd, SSL *ssl, void *buf, int num, t_bool ssl_available)
+int		received(int fd, SSL *ssl, void *buf, t_bool ssl_available)
 {
 	int	r;
 	if (ssl_available == true)
-		r = SSL_read(ssl, buf, num);
+		r = SSL_read(ssl, buf, BUFF_SIZE - 1);
 	else
-		r = read(fd, buf, num);
+		r = read(fd, buf, BUFF_SIZE - 1);
 	printf("DEBUG RECEIVED : [%s]\n", (char*)buf);
 	return (r);
 }
@@ -126,7 +126,7 @@ void	listen_clients(int sock, SSL_CTX *ctx)
 {
 	int		cs;
 	int		r;
-	char	buff[1024];
+	char	buff[BUFF_SIZE];
 	// pid_t	pid;
 	t_client_verbs	cv;
 	t_server_verbs	sv;
@@ -146,7 +146,7 @@ void	listen_clients(int sock, SSL_CTX *ctx)
         if (SSL_accept(ssl) <= 0) {
             ERR_print_errors_fp(stderr);
         }
-		while((r = received(cs, ssl, (void*)buff, 1023, ssl_available)) > 0)
+		while((r = received(cs, ssl, (void*)buff, ssl_available)) > 0)
 		{
 			buff[r] = '\0';
 			ft_printf("received %d bytes : [%s]\n", r, buff);

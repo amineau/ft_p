@@ -6,18 +6,20 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/23 13:21:26 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 03:34:34 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 04:33:01 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LIBFT_H
 # define LIBFT_H
-# define BUFF_SIZE 100
+
 # include <unistd.h>
 # include <string.h>
 # include <stdlib.h>
 # include <fcntl.h>
 # include "ft_printf.h"
+
+# define BUFF_SIZE 1024
 
 typedef struct	s_list
 {
