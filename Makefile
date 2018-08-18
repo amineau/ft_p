@@ -66,6 +66,10 @@ $(OPATH)/%.o: $(SPATH)/%.c
 		|| (printf "%-30s$(DARK)-->>\t$(RED)$@$(WHITE)\n" "$<" \
 		&& exit 1)
 
+generate_ssl:
+		openssl req -newkey rsa:4096 -keyout key.pem -out cert.pem \
+			-days 365 -nodes -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42"
+
 clean:
 		@printf "$(YELLOW)%-30s$(WHITE)" "Deleting $(OPATH)"
 		@rm -rf $(OPATH)
