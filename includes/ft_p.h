@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 07:19:44 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 03:20:47 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # include <pthread.h>
 # include <security/pam_appl.h>
 # include <security/pam_misc.h>
+# include <openssl/ssl.h>
+# include <openssl/err.h>
 
 // Debug
 # include <string.h>
@@ -32,6 +34,8 @@
 
 # define MAX_PENDING_CONNECTIONS 42
 # define MAX_CLIENT_CONNECTION 8
+
+# define TLS_VERSION "TLSv1.3"
 
 # define CRLF "\r\n"
 # define LF '\n'
@@ -42,9 +46,11 @@
 # define USERNAME "USER"
 # define PASSWORD "PASS"
 # define ACCOUNT  "ACCT"
+# define AUTH_METHOD "AUTH"
 # define CHANGE_WORKDIR "CWD"
 # define CHANGE_TO_PARENT_DIR "CDUP"
 # define LOGOUT "QUIT"
+# define REPRESENTATION_TYPE "TYPE"
 # define RETRIEVE "RETR"
 # define STORE "STOR" 
 # define RENAME_FROM "RNFR"
@@ -66,7 +72,7 @@ typedef enum	e_ftp_code
 	_200, _202, _211, _214, _220, _221, _226, _230, _250, _257,
 	_331, _332, _350,
 	_421, _425, _426, _430, _450, _451, _452,
-	_500, _501, _502, _503, _504, _506, _530, _532, _550, _551, _552, _553
+	_500, _501, _502, _503, _504, _506, _520, _530, _532, _550, _551, _552, _553
 }				t_ftp_code_enum;
 
 static const char *g_ftp_code_str[] = {
@@ -74,7 +80,7 @@ static const char *g_ftp_code_str[] = {
 	"200", "202", "211", "214", "220", "221", "226", "230", "250", "257",
 	"331", "332", "350",
 	"421", "425", "426", "430", "450", "451", "452",
-	"500", "501", "502", "503", "504", "506", "530", "532",
+	"500", "501", "502", "503", "504", "506", "520", "530", "532",
 	"550", "551", "552", "553",
 	NULL
 };
@@ -87,9 +93,11 @@ static const char*	g_ftp_cmd_str[] = {
 	USERNAME,
 	PASSWORD,
 	ACCOUNT,
+	AUTH_METHOD,
 	CHANGE_WORKDIR,
 	CHANGE_TO_PARENT_DIR,
 	LOGOUT,
+	REPRESENTATION_TYPE,
 	RETRIEVE,
 	STORE,
 	RENAME_FROM,
@@ -161,6 +169,7 @@ typedef struct	s_server_verbs
 	char*			user_info;
 }				t_server_verbs;
 
+
 typedef char			*(*t_client_action)(t_client_verbs*);
 typedef t_server_verbs	(*t_server_action)(t_client_verbs*);
 
@@ -173,9 +182,11 @@ t_server_verbs  cmd_not_implemented(void);
 t_server_verbs  cmd_username(t_client_verbs *cv);
 t_server_verbs  cmd_password(t_client_verbs *cv);
 t_server_verbs  cmd_account(t_client_verbs *cv);
+t_server_verbs  cmd_auth_method(t_client_verbs *cv);
 t_server_verbs	cmd_change_workdir(t_client_verbs *cv);
 t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv);
 t_server_verbs	cmd_logout(t_client_verbs *cv);
+t_server_verbs	cmd_representation_type(t_client_verbs *cv);
 t_server_verbs	cmd_retrieve(t_client_verbs *cv);
 t_server_verbs	cmd_store(t_client_verbs *cv);
 t_server_verbs	cmd_rename_from(t_client_verbs *cv);
@@ -190,5 +201,11 @@ t_server_verbs	cmd_system(t_client_verbs *cv);
 t_server_verbs	cmd_noop(t_client_verbs *cv);
 
 int				response_to_client(int sock, t_ftp_code_enum code, char *description);
+
+void			init_openssl();
+void			cleanup_openssl();
+SSL_CTX			*create_context();
+void			configure_context(SSL_CTX *ctx);
+
 
 #endif

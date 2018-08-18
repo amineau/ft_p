@@ -35,3 +35,5 @@ server
 
 # Ide Files
 .vscode/
+
+*.pem

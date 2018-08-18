@@ -4,7 +4,7 @@ CLIENT_NAME = client
 CC = gcc
 
 SERVER_SRCS = server.c cmd_generic.c cmd_auth.c response_to_client.c \
-			  get_dir.c cmd_files_management.c
+			  get_dir.c cmd_files_management.c openssl.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
 CLIENT_SRCS = client.c
@@ -20,7 +20,7 @@ LFTHPATH = $(LFTPATH)/includes
 
 CFLAGS = -Wall -Wextra -g # TODO : Adding -Werror
 IFLAGS = -I./$(HPATH) -I./$(LFTHPATH)
-LIBS   = -L./$(LFTPATH) -lprt -lpam -lpam_misc
+LIBS   = -L./$(LFTPATH) -lprt -lpam -lpam_misc -lssl -lcrypto
 
 
 INC = $(addprefix $(HPATH)/,$(INCS))

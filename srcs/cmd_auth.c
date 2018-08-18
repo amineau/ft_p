@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 04:37:55 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 03:20:30 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,4 +97,23 @@ t_server_verbs  cmd_account(t_client_verbs *cv)
 {
     (void)cv;
     return (cmd_not_implemented());
+}
+
+t_server_verbs  cmd_auth_method(t_client_verbs *cv)
+{
+    t_server_verbs  sv;
+
+    if (!ft_strcmp(cv->cv_arg, "TLS"))
+    {
+        sv.sr_code = _220;
+        sv.sr_state = POS_DEF;
+        sv.user_info = TLS_VERSION;
+    }
+    else
+    {
+        sv.sr_code = _520;
+        sv.sr_state = NEG_DEF;
+        sv.user_info = "Not supported";
+    }
+    return (sv);
 }

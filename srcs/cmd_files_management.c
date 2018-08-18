@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 07:04:35 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/17 14:29:50 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ t_server_verbs	cmd_print_workdir(t_client_verbs *cv)
 	{
 		wdir = get_wdir();
 		printf("**%s**",wdir);
-		ft_strcpy(buff, wdir);
+		sprintf(buff, "\"%s\" is the current directory", wdir);
 		ft_strdel(&wdir);
 		sv.sr_code = _257;
 		sv.sr_state = POS_DEF;
@@ -51,7 +51,12 @@ t_server_verbs	cmd_logout(t_client_verbs *cv)
 {
 	(void)cv;
     return (cmd_not_implemented());
-} 
+}
+t_server_verbs	cmd_representation_type(t_client_verbs *cv)
+{
+	(void)cv;
+    return (cmd_not_implemented());
+}
 t_server_verbs	cmd_retrieve(t_client_verbs *cv)
 {
 	(void)cv;

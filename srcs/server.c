@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/17 07:20:40 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 03:31:05 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ t_server_verbs	ftp_parser(t_client_verbs* cv)
 {
 	t_server_action	command[] = {
 		cmd_username, cmd_password, cmd_account, cmd_change_workdir,
-		cmd_change_to_parent_dir, cmd_logout, cmd_retrieve, cmd_store,
+		cmd_change_to_parent_dir, cmd_logout, cmd_representation_type, cmd_retrieve, cmd_store,
 		cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir,
 		cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_noop
 	};
@@ -110,7 +110,19 @@ t_server_verbs	ftp_parser(t_client_verbs* cv)
 	return (command[cv->cv_code](cv));
 }
 
-void	listen_clients(int sock)
+int		received(int fd, SSL *ssl, void *buf, int num, t_bool ssl_available)
+{
+	int	r;
+	if (ssl_available == true)
+		r = SSL_read(ssl, buf, num);
+	else
+		r = read(fd, buf, num);
+	printf("DEBUG RECEIVED : [%s]\n", (char*)buf);
+	return (r);
+}
+
+
+void	listen_clients(int sock, SSL_CTX *ctx)
 {
 	int		cs;
 	int		r;
@@ -118,13 +130,23 @@ void	listen_clients(int sock)
 	// pid_t	pid;
 	t_client_verbs	cv;
 	t_server_verbs	sv;
+	SSL		*ssl;
+	t_bool	ssl_available;
+
+	ssl_available = false;
 
 	while(1)
 	{
 		cs = open_client(sock);
 		ft_printf("socket : %d\nclient socket : %d\n", sock, cs);
 		// pid = fork();
-		while((r = recv(cs, buff, 1023, 0)) > 0)
+		ssl = SSL_new(ctx);
+        SSL_set_fd(ssl, cs);
+
+        if (SSL_accept(ssl) <= 0) {
+            ERR_print_errors_fp(stderr);
+        }
+		while((r = received(cs, ssl, (void*)buff, 1023, ssl_available)) > 0)
 		{
 			buff[r] = '\0';
 			ft_printf("received %d bytes : [%s]\n", r, buff);
@@ -142,6 +164,7 @@ void	listen_clients(int sock)
 		}
 		// ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
 		ft_printf("Socket finished with %s\n\trecv : %d\n", strerror(errno), r);
+        SSL_free(ssl);
 		close(cs);
 	}
 }
@@ -161,33 +184,40 @@ void	getargs(int ac, char** av, struct s_server_args *sa)
 		else
 			usage(av[0]);
 	}
+	if (chdir(sa->sa_root) == -1)
+	{
+		if (errno == EACCES)
+			ft_printf("%s : Permission denied\n", sa->sa_root);
+		else if (errno == ENOTDIR)
+			ft_printf("%s : Not a directory\n", sa->sa_root);
+		else if (errno == ENOENT)
+			ft_printf("%s : No such file or directory\n", sa->sa_root);
+		else
+			ft_printf("chdir failed\n");
+		exit(-1);
+	}
 }
 
 int		main(int ac, char **av)
 {
 	t_server_args	sa;
 	int 			sock;
+	SSL_CTX *ctx;
 
-	if (ac < 2)
-		usage(av[0]);
 	getargs(ac, av, &sa);
-	if (chdir(sa.sa_root) == -1)
-	{
-		if (errno == EACCES)
-			ft_printf("%s : Permission denied\n", sa.sa_root);
-		else if (errno == ENOTDIR)
-			ft_printf("%s : Not a directory\n", sa.sa_root);
-		else if (errno == ENOENT)
-			ft_printf("%s : No such file or directory\n", sa.sa_root);
-		else
-			ft_printf("chdir failed\n");
-		exit(-1);
-	}
+
+    init_openssl();
+    ctx = create_context();
+
+    configure_context(ctx);
 	(void)get_root();
 	sock = create_server(sa.sa_port);
-	listen_clients(sock);
+	
+	listen_clients(sock, ctx);
+	
 	close(sock);
-
+	SSL_CTX_free(ctx);
+    cleanup_openssl();
 	// TODO : Split .h to remove these lines
 	(void)g_user_cmd_str;
 	(void)g_ftp_cmd_str;
