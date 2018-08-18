@@ -67,8 +67,8 @@ $(OPATH)/%.o: $(SPATH)/%.c
 		&& exit 1)
 
 generate_ssl:
-		openssl req -newkey rsa:4096 -keyout key.pem -out cert.pem \
-			-days 365 -nodes -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42"
+		openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem \
+			-days 365 -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42" -nodes
 
 clean:
 		@printf "$(YELLOW)%-30s$(WHITE)" "Deleting $(OPATH)"

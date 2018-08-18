@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 04:30:46 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/18 10:30:15 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,14 +110,28 @@ t_server_verbs	ftp_parser(t_client_verbs* cv)
 	return (command[cv->cv_code](cv));
 }
 
-int		received(int fd, SSL *ssl, void *buf, t_bool ssl_available)
+t_bool	is_valid_tls(char *str, size_t len)
 {
-	int	r;
+	return ((!ft_strcmp(&str[len - 2], CRLF)));
+}
+
+int		received(int fd, SSL *ssl, char *buf, t_bool ssl_available)
+{
+	char	tmp[BUFF_SIZE];
+	int		r;
+
 	if (ssl_available == true)
-		r = SSL_read(ssl, buf, BUFF_SIZE - 1);
+		r = SSL_read(ssl, tmp, BUFF_SIZE - 1);
 	else
-		r = read(fd, buf, BUFF_SIZE - 1);
-	printf("DEBUG RECEIVED : [%s]\n", (char*)buf);
+		r = read(fd, tmp, BUFF_SIZE - 1);
+	tmp[r] = '\0';
+
+	ft_printf("received %d bytes : [%s]\n", r, tmp);
+	ft_strncat(buf, tmp, BUFF_SIZE);
+	ft_printf("buf before : [%s]\n", buf);
+	if (r != 0 && !is_valid_tls(tmp, r))
+		received(fd, ssl, tmp, ssl_available);
+	ft_printf("buf after : [%s]\n", buf);
 	return (r);
 }
 
@@ -146,11 +160,9 @@ void	listen_clients(int sock, SSL_CTX *ctx)
         if (SSL_accept(ssl) <= 0) {
             ERR_print_errors_fp(stderr);
         }
-		while((r = received(cs, ssl, (void*)buff, ssl_available)) > 0)
+		buff[0] = '\0';
+		while((r = received(cs, ssl, buff, ssl_available)) > 0)
 		{
-			buff[r] = '\0';
-			ft_printf("received %d bytes : [%s]\n", r, buff);
-
 			sv = ftp_lexer(buff, &cv);
 			if (sv.sr_code != _100)
 				response_to_client(cs, sv.sr_code, sv.user_info);
@@ -159,7 +171,7 @@ void	listen_clients(int sock, SSL_CTX *ctx)
 				sv = ftp_parser(&cv);
 				response_to_client(cs, sv.sr_code, sv.user_info);
 			}
-
+			buff[0] = '\0';
 			// ft_printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
 		}
 		// ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
