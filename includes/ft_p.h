@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 03:20:47 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/19 16:28:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include <security/pam_appl.h>
 # include <security/pam_misc.h>
 # include <openssl/ssl.h>
+# include <openssl/crypto.h>
 # include <openssl/err.h>
 
 // Debug
@@ -169,39 +170,46 @@ typedef struct	s_server_verbs
 	char*			user_info;
 }				t_server_verbs;
 
+typedef struct	s_env
+{
+	int		cs;
+	SSL		*ssl;
+	t_bool	ssl_activated;
+}				t_env;
 
 typedef char			*(*t_client_action)(t_client_verbs*);
-typedef t_server_verbs	(*t_server_action)(t_client_verbs*);
+typedef t_server_verbs	(*t_server_action)(t_client_verbs*, t_env*);
 
 
 char*			ft_getcwd(void);
 char*			get_root(void);
 char*			get_wdir(void);
 
-t_server_verbs  cmd_not_implemented(void);
-t_server_verbs  cmd_username(t_client_verbs *cv);
-t_server_verbs  cmd_password(t_client_verbs *cv);
-t_server_verbs  cmd_account(t_client_verbs *cv);
-t_server_verbs  cmd_auth_method(t_client_verbs *cv);
-t_server_verbs	cmd_change_workdir(t_client_verbs *cv);
-t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv);
-t_server_verbs	cmd_logout(t_client_verbs *cv);
-t_server_verbs	cmd_representation_type(t_client_verbs *cv);
-t_server_verbs	cmd_retrieve(t_client_verbs *cv);
-t_server_verbs	cmd_store(t_client_verbs *cv);
-t_server_verbs	cmd_rename_from(t_client_verbs *cv);
-t_server_verbs	cmd_rename_to(t_client_verbs *cv);
-t_server_verbs	cmd_abort(t_client_verbs *cv);
-t_server_verbs	cmd_delete(t_client_verbs *cv);
-t_server_verbs	cmd_remove_dir(t_client_verbs *cv);
-t_server_verbs	cmd_make_dir(t_client_verbs *cv);
-t_server_verbs	cmd_print_workdir(t_client_verbs *cv);
-t_server_verbs	cmd_list(t_client_verbs *cv);
-t_server_verbs	cmd_system(t_client_verbs *cv);
-t_server_verbs	cmd_noop(t_client_verbs *cv);
+t_server_verbs  cmd_not_implemented(char* str, t_env* env);
+t_server_verbs  cmd_username(t_client_verbs *cv, t_env* env);
+t_server_verbs  cmd_password(t_client_verbs *cv, t_env* env);
+t_server_verbs  cmd_account(t_client_verbs *cv, t_env* env);
+t_server_verbs  cmd_auth_method(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_change_workdir(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_logout(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_representation_type(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_retrieve(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_store(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_rename_from(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_rename_to(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_abort(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_delete(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_remove_dir(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_make_dir(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_print_workdir(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_list(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_system(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_noop(t_client_verbs *cv, t_env* env);
 
 int				response_to_client(int sock, t_ftp_code_enum code, char *description);
 
+t_bool			ssl_activated(t_bool to_activate);
 void			init_openssl();
 void			cleanup_openssl();
 SSL_CTX			*create_context();

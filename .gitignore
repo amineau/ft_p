@@ -37,3 +37,6 @@ server
 .vscode/
 
 *.pem
+*.key
+*.crt
+*.csr

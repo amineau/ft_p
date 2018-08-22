@@ -67,8 +67,10 @@ $(OPATH)/%.o: $(SPATH)/%.c
 		&& exit 1)
 
 generate_ssl:
-		openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem \
-			-days 365 -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42" -nodes
+		# openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.csr \
+		# 	-days 365 -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42" -nodes
+		openssl req -new -newkey rsa:2048 -nodes -keyout server.key -out server.csr -subj "/CN=localhost"
+		openssl x509 -req -in server.csr -signkey server.key -out server.crt
 
 clean:
 		@printf "$(YELLOW)%-30s$(WHITE)" "Deleting $(OPATH)"

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 10:30:15 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/20 00:01:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ int		open_client(int sock)
 		else
 			ft_printf("Accept failed\n\terrno : %d\n\terror : %s\n", errno, strerror(errno));
 	}
-	response_to_client(cs, _220, "Server available for new user");
 	return (cs);
 }
 
@@ -98,16 +97,16 @@ t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv)
 }
 
 // TODO : Merge with user_parser (client.c)
-t_server_verbs	ftp_parser(t_client_verbs* cv)
+t_server_verbs	ftp_parser(t_client_verbs* cv, t_env* env)
 {
 	t_server_action	command[] = {
-		cmd_username, cmd_password, cmd_account, cmd_change_workdir,
+		cmd_username, cmd_password, cmd_account, cmd_auth_method, cmd_change_workdir,
 		cmd_change_to_parent_dir, cmd_logout, cmd_representation_type, cmd_retrieve, cmd_store,
 		cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir,
 		cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_noop
 	};
 	printf("code : %d\nstr : %s\n", cv->cv_code, g_ftp_cmd_str[cv->cv_code]);
-	return (command[cv->cv_code](cv));
+	return (command[cv->cv_code](cv, env));
 }
 
 t_bool	is_valid_tls(char *str, size_t len)
@@ -115,69 +114,89 @@ t_bool	is_valid_tls(char *str, size_t len)
 	return ((!ft_strcmp(&str[len - 2], CRLF)));
 }
 
-int		received(int fd, SSL *ssl, char *buf, t_bool ssl_available)
+char*	_received(int fd, SSL *ssl)
 {
-	char	tmp[BUFF_SIZE];
+	char	buff[BUFF_SIZE];
+	char*	ptr;
+	char*	ret;
 	int		r;
 
-	if (ssl_available == true)
-		r = SSL_read(ssl, tmp, BUFF_SIZE - 1);
+	if (ssl_activated(false) == true)
+		r = SSL_read(ssl, buff, BUFF_SIZE - 1);
 	else
-		r = read(fd, tmp, BUFF_SIZE - 1);
-	tmp[r] = '\0';
+		r = read(fd, buff, BUFF_SIZE - 1);
+	ERR_print_errors_fp(stderr);
+	// printf("********* r = %d\n********* errno = %s\n",r, strerror(errno));
+	if (r <=0)
+		return (NULL);
+	buff[r] = '\0';
 
-	ft_printf("received %d bytes : [%s]\n", r, tmp);
-	ft_strncat(buf, tmp, BUFF_SIZE);
-	ft_printf("buf before : [%s]\n", buf);
-	if (r != 0 && !is_valid_tls(tmp, r))
-		received(fd, ssl, tmp, ssl_available);
-	ft_printf("buf after : [%s]\n", buf);
-	return (r);
+	if (r != 0 && !is_valid_tls(buff, r))
+	{
+		ret = _received(fd, ssl);
+		ft_strncat(buff, ret, BUFF_SIZE);
+		ft_strdel(&ret);
+	}
+	ptr = (char*)malloc(sizeof(char) * ft_strlen(buff));
+	ft_strcpy(ptr, buff);
+	return (ptr);
 }
 
+int		received(int fd, SSL *ssl, char* buff)
+{
+	char*	ret;
+
+	buff[0] = '\0';
+	ret = _received(fd, ssl);
+	ft_strcpy(buff, ret);
+	ft_strdel(&ret);
+	return ft_strlen(buff);
+}
 
 void	listen_clients(int sock, SSL_CTX *ctx)
 {
-	int		cs;
 	int		r;
 	char	buff[BUFF_SIZE];
 	// pid_t	pid;
 	t_client_verbs	cv;
 	t_server_verbs	sv;
-	SSL		*ssl;
-	t_bool	ssl_available;
-
-	ssl_available = false;
+	t_env	env;
 
 	while(1)
 	{
-		cs = open_client(sock);
-		ft_printf("socket : %d\nclient socket : %d\n", sock, cs);
+		env.cs = open_client(sock);
+		ft_printf("socket : %d\nclient socket : %d\n", sock, env.cs);
 		// pid = fork();
-		ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, cs);
+		env.ssl = SSL_new(ctx);
+        SSL_set_fd(env.ssl, env.cs);
 
-        if (SSL_accept(ssl) <= 0) {
-            ERR_print_errors_fp(stderr);
-        }
-		buff[0] = '\0';
-		while((r = received(cs, ssl, buff, ssl_available)) > 0)
+        printf("ssl first : %p\n", env.ssl);
+		const char * reply = "200 OK\r\n";
+
+		if (SSL_accept(env.ssl) <= 0) {
+			ERR_print_errors_fp(stderr);
+			exit(EXIT_FAILURE);
+		}
+		else
 		{
+			printf("Before write\n");
+			SSL_write(env.ssl, reply, ft_strlen(reply));
+			printf("After write\n");
+		}
+		response_to_client(env.cs, _220, "Server available for new user");
+		while((r = received(env.cs, env.ssl, buff)) > 0)
+		{
+			printf("while passing\n");
 			sv = ftp_lexer(buff, &cv);
-			if (sv.sr_code != _100)
-				response_to_client(cs, sv.sr_code, sv.user_info);
 			if (sv.sr_state == POS_TMP)
-			{
-				sv = ftp_parser(&cv);
-				response_to_client(cs, sv.sr_code, sv.user_info);
-			}
-			buff[0] = '\0';
+				sv = ftp_parser(&cv, &env);
+			response_to_client(env.cs, sv.sr_code, sv.user_info);
 			// ft_printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
 		}
 		// ft_printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
-		ft_printf("Socket finished with %s\n\trecv : %d\n", strerror(errno), r);
-        SSL_free(ssl);
-		close(cs);
+		ft_printf("Socket finished with %s\n", strerror(errno));
+        SSL_free(env.ssl);
+		close(env.cs);
 	}
 }
 

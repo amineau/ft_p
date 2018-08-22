@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 03:20:30 by amineau          ###   ########.fr       */
+/*   Updated: 2018/08/19 15:29:42 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ static int pamconv(int num_msg, const struct pam_message **msg,
     return PAM_SUCCESS;
 }
 
-t_server_verbs  cmd_username(t_client_verbs *cv)
+t_server_verbs  cmd_username(t_client_verbs* cv, t_env* env)
 {
     t_server_verbs          sv;
     const struct pam_conv   conv = {
@@ -65,7 +65,7 @@ t_server_verbs  cmd_username(t_client_verbs *cv)
     return (sv);
 }
 
-t_server_verbs  cmd_password(t_client_verbs *cv)
+t_server_verbs  cmd_password(t_client_verbs* cv, t_env* env)
 {
     t_server_verbs  sv;
     int             pam_status;
@@ -93,27 +93,37 @@ t_server_verbs  cmd_password(t_client_verbs *cv)
     return (sv);
 }
 
-t_server_verbs  cmd_account(t_client_verbs *cv)
+t_server_verbs  cmd_account(t_client_verbs* cv, t_env* env)
 {
     (void)cv;
-    return (cmd_not_implemented());
+    return (cmd_not_implemented(ACCOUNT, env));
 }
 
-t_server_verbs  cmd_auth_method(t_client_verbs *cv)
+t_server_verbs  cmd_auth_method(t_client_verbs* cv, t_env* env)
 {
     t_server_verbs  sv;
 
     if (!ft_strcmp(cv->cv_arg, "TLS"))
     {
-        sv.sr_code = _220;
-        sv.sr_state = POS_DEF;
-        sv.user_info = TLS_VERSION;
+        printf("DEBUG FLAG 1\n");
+        printf("ssl second : %p\n", env->ssl);
+        // if (SSL_accept(env->ssl) <= 0)
+        // {
+        //     printf("DEBUG FLAG 2\n");
+        //     ERR_print_errors_fp(stderr);
+        // }
+        // else
+        // {
+            printf("DEBUG FLAG 3\n");
+            ssl_activated(true);
+            sv.sr_code = _220;
+            sv.sr_state = POS_DEF;
+            sv.user_info = TLS_VERSION;
+            return (sv);
+        // }
     }
-    else
-    {
-        sv.sr_code = _520;
-        sv.sr_state = NEG_DEF;
-        sv.user_info = "Not supported";
-    }
+    sv.sr_code = _520;
+    sv.sr_state = NEG_DEF;
+    sv.user_info = "Not supported";
     return (sv);
 }
