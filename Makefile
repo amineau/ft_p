@@ -3,12 +3,12 @@ CLIENT_NAME = client
 
 CC = gcc
 
-SERVER_SRCS = server.c cmd_generic.c cmd_auth.c response_to_client.c \
-			  get_dir.c cmd_files_management.c cmd_transfert.c openssl.c \
-			  read_sock.c
+SERVER_SRCS = server/server.c server/cmd_generic.c server/cmd_auth.c server/response_to_client.c \
+			  server/get_dir.c server/cmd_files_management.c server/cmd_transfert.c common/openssl.c \
+			  common/read_sock.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
-CLIENT_SRCS = client.c openssl.c read_sock.c
+CLIENT_SRCS = client/client.c common/openssl.c common/read_sock.c
 
 
 INCS = ft_p.h
@@ -62,6 +62,7 @@ $(OPATH):
 		@echo "$(GREENB)<<--$(WHITE)"
 
 $(OPATH)/%.o: $(SPATH)/%.c
+		mkdir -p $(shell dirname $@)
 		@$(CC) $(CFLAGS) $(IFLAGS) -o $@ -c $< \
 		&& printf "%-30s$(DARK)-->>\t$(GREEN)$@$(WHITE)\n" "$<" \
 		|| (printf "%-30s$(DARK)-->>\t$(RED)$@$(WHITE)\n" "$<" \
