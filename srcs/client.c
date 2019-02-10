@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 05:03:21 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 05:11:54 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,6 +234,8 @@ int		connection_protocol(t_env *env)
 		;
 	if (SSL_connect(env->ssl) == -1)
         ERR_print_errors_fp(stderr);
+	printf("Connected with %s encryption\n", SSL_get_cipher(env->ssl));
+	ShowCerts(env->ssl);
 	env->ssl_activated = true;
 	send_to_remote(env, "USER amineau");
 }

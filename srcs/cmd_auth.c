@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 04:46:00 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 05:14:49 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,11 +105,12 @@ t_server_verbs  cmd_auth_method(t_client_verbs* cv, t_env* env)
 
     if (!ft_strcmp(cv->cv_arg, "TLS"))
     {
-        response_to_client(env, _234, "");
         printf("DEBUG FLAG 1\n");
         env->ssl = SSL_new(*env->ctx);
         printf("ssl second : %p\n", env->ssl);
         SSL_set_fd(env->ssl, env->cs);
+        response_to_client(env, _234, "");
+        // TODO : Probablement qu'il faut recreer une socket propre au ssl
         if (SSL_accept(env->ssl) <= 0)
         {
             printf("DEBUG FLAG 2\n");
