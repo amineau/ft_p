@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 05:56:41 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 04:31:43 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 04:50:00 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,25 @@ char*	ft_getcwd(void)
 	char*	cwd;
 	char*	str;
 
-	len = BUFF_SIZE;
-	str = (char*)malloc(sizeof(char) * len);
-	while ((cwd = getcwd(str, len)) == NULL && errno == ERANGE)
-	{
-		len += BUFF_SIZE;
-		// TODO : ft_realloc
-		str = realloc(str, len);
-	}
-	return (cwd);
+	len = 50;
+	if ((str = (char*)malloc(sizeof(char) * len)) == NULL)
+		exit(-1);
+	errno = 0;
+	cwd = getcwd(str, len);
+	// ft_putendl("ft_getcwd malloc pass");
+	// while ((cwd = getcwd(str, len)) == NULL && errno == ERANGE)
+	// {
+	// 	ft_putendl("ft_getcwd begin while");		
+	// 	len += BUFF_SIZE;
+	// 	// TODO : ft_realloc
+	// 	str = realloc(str, len);
+	// 	ft_putendl("ft_getcwd end while");		
+	// }
+	// ft_putendl(cwd);
+	// ft_putendl(str);
+	// ft_putendl(strerror(errno));
+	// ft_putendl("ft_getcwd end function");
+	return (str);
 }
 
 char	*get_root(void)

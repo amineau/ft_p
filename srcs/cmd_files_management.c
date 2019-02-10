@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/18 13:22:44 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 04:46:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,50 @@ t_server_verbs	cmd_make_dir(t_client_verbs* cv, t_env* env)
 } 
 t_server_verbs	cmd_list(t_client_verbs* cv, t_env* env)
 {
+	t_server_verbs	sv;
+	struct dirent*	dir;
+	DIR*			dp;
+	char			buff[BUFF_SIZE];
+	int				i;
+	int				j;
+	char*			cwd;
+	char*			wdir;
+
 	(void)cv;
-    return (cmd_not_implemented(LIST, env));
+	cwd = ft_getcwd();
+	wdir = get_wdir();
+	ft_putendl("call opendir");
+	dp = opendir(cwd);
+	if (dp != NULL)
+	{
+		ft_putendl("opendir successed");
+		response_to_client(env, _150, "");
+		i = 1;
+		errno = 0;
+		buff[0] = '\n';
+		while((dir = readdir(dp)) != NULL)
+		{
+			j = -1;
+			while(wdir[++j])
+				buff[i +  j] = wdir[j];
+			i += j;
+			j = -1;		
+			while(dir->d_name[++j])
+				buff[i + j] = dir->d_name[j];
+			i += j + 1;
+			buff[i - 1] = ' ';
+		}
+		buff[i - 1] = '\0';
+		printf("buff : [%s]\n", buff);
+		sv.sr_code = _226;
+		sv.sr_state = POS_DEF;
+		sv.user_info = "";
+		closedir(dp);
+		response_to_client(env, _NOCODE, buff);
+		printf("coucou\n");
+	}
+	ft_strdel(&cwd);
+    return (sv);
 } 
 t_server_verbs	cmd_system(t_client_verbs* cv, t_env* env)
 {

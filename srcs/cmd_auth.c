@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/19 15:29:42 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 04:46:00 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,22 +105,25 @@ t_server_verbs  cmd_auth_method(t_client_verbs* cv, t_env* env)
 
     if (!ft_strcmp(cv->cv_arg, "TLS"))
     {
+        response_to_client(env, _234, "");
         printf("DEBUG FLAG 1\n");
+        env->ssl = SSL_new(*env->ctx);
         printf("ssl second : %p\n", env->ssl);
-        // if (SSL_accept(env->ssl) <= 0)
-        // {
-        //     printf("DEBUG FLAG 2\n");
-        //     ERR_print_errors_fp(stderr);
-        // }
-        // else
-        // {
+        SSL_set_fd(env->ssl, env->cs);
+        if (SSL_accept(env->ssl) <= 0)
+        {
+            printf("DEBUG FLAG 2\n");
+            ERR_print_errors_fp(stderr);
+        }
+        else
+        {
             printf("DEBUG FLAG 3\n");
-            ssl_activated(true);
-            sv.sr_code = _220;
+            env->ssl_activated = true;
+            sv.sr_code = _332;
             sv.sr_state = POS_DEF;
             sv.user_info = TLS_VERSION;
             return (sv);
-        // }
+        }
     }
     sv.sr_code = _520;
     sv.sr_state = NEG_DEF;

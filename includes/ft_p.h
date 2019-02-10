@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/19 16:28:16 by amineau          ###   ########.fr       */
+/*   Updated: 2019/02/10 04:45:30 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,17 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
-# include <sys/socket.h>
 # include <netdb.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <errno.h>
 # include <pthread.h>
+# include <dirent.h>
+# include <signal.h>
+# include <sys/socket.h>
+# include <sys/time.h>
+# include <sys/resource.h>
+# include <sys/wait.h>
 # include <security/pam_appl.h>
 # include <security/pam_misc.h>
 # include <openssl/ssl.h>
@@ -51,6 +56,8 @@
 # define CHANGE_WORKDIR "CWD"
 # define CHANGE_TO_PARENT_DIR "CDUP"
 # define LOGOUT "QUIT"
+# define PORT "PORT"
+# define PASSIVE_MODE "PASV"
 # define REPRESENTATION_TYPE "TYPE"
 # define RETRIEVE "RETR"
 # define STORE "STOR" 
@@ -70,19 +77,21 @@
 typedef enum	e_ftp_code
 {
 	_100, _120, _125, _150,
-	_200, _202, _211, _214, _220, _221, _226, _230, _250, _257,
+	_200, _202, _211, _214, _220, _221, _226, _230, _234, _250, _257,
 	_331, _332, _350,
 	_421, _425, _426, _430, _450, _451, _452,
-	_500, _501, _502, _503, _504, _506, _520, _530, _532, _550, _551, _552, _553
+	_500, _501, _502, _503, _504, _506, _520, _530, _532, _550, _551, _552, _553,
+	_NOCODE
 }				t_ftp_code_enum;
 
 static const char *g_ftp_code_str[] = {
 	"100", "120", "125", "150",
-	"200", "202", "211", "214", "220", "221", "226", "230", "250", "257",
+	"200", "202", "211", "214", "220", "221", "226", "230", "234", "250", "257",
 	"331", "332", "350",
 	"421", "425", "426", "430", "450", "451", "452",
 	"500", "501", "502", "503", "504", "506", "520", "530", "532",
 	"550", "551", "552", "553",
+	"",
 	NULL
 };
 /**********************************/
@@ -98,6 +107,8 @@ static const char*	g_ftp_cmd_str[] = {
 	CHANGE_WORKDIR,
 	CHANGE_TO_PARENT_DIR,
 	LOGOUT,
+	PORT,
+	PASSIVE_MODE,
 	REPRESENTATION_TYPE,
 	RETRIEVE,
 	STORE,
@@ -147,12 +158,14 @@ typedef struct	s_client_args
 	char*			ca_user;
 	char*			ca_pass;
 	char*			ca_wdir;
+	t_bool			debug;
 }				t_client_args;
 
 typedef struct	s_server_args
 {
 	int		sa_port;
 	char*	sa_root;
+	t_bool	debug;
 }				t_server_args;
 
 typedef struct	s_client_verbs
@@ -174,10 +187,12 @@ typedef struct	s_env
 {
 	int		cs;
 	SSL		*ssl;
+	SSL_CTX **ctx;
 	t_bool	ssl_activated;
+	t_bool	debug;
 }				t_env;
 
-typedef char			*(*t_client_action)(t_client_verbs*);
+typedef char			*(*t_client_action)(t_client_verbs*, int sock);
 typedef t_server_verbs	(*t_server_action)(t_client_verbs*, t_env*);
 
 
@@ -193,6 +208,8 @@ t_server_verbs  cmd_auth_method(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_change_workdir(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_logout(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_port(t_client_verbs *cv, t_env* env);
+t_server_verbs	cmd_passive_mode(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_representation_type(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_retrieve(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_store(t_client_verbs *cv, t_env* env);
@@ -207,13 +224,14 @@ t_server_verbs	cmd_list(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_system(t_client_verbs *cv, t_env* env);
 t_server_verbs	cmd_noop(t_client_verbs *cv, t_env* env);
 
-int				response_to_client(int sock, t_ftp_code_enum code, char *description);
+int				response_to_client(t_env* env, t_ftp_code_enum code, char *description);
+int				received(t_env* env, char* buff);
 
-t_bool			ssl_activated(t_bool to_activate);
 void			init_openssl();
 void			cleanup_openssl();
 SSL_CTX			*create_context();
 void			configure_context(SSL_CTX *ctx);
+void			ShowCerts(SSL* ssl);
 
 
 #endif

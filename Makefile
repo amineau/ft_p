@@ -4,10 +4,11 @@ CLIENT_NAME = client
 CC = gcc
 
 SERVER_SRCS = server.c cmd_generic.c cmd_auth.c response_to_client.c \
-			  get_dir.c cmd_files_management.c openssl.c
+			  get_dir.c cmd_files_management.c cmd_transfert.c openssl.c \
+			  read_sock.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
-CLIENT_SRCS = client.c
+CLIENT_SRCS = client.c openssl.c read_sock.c
 
 
 INCS = ft_p.h
