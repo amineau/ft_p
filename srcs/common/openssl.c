@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/18 02:19:49 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 04:31:43 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 01:27:01 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,20 +35,45 @@ void ShowCerts(SSL* ssl)
 void	init_openssl()
 { 
     SSL_load_error_strings();	
+    SSL_library_init();
     OpenSSL_add_ssl_algorithms();
 }
 
 void	cleanup_openssl()
 {
+    ERR_free_strings();
     EVP_cleanup();
 }
 
-SSL_CTX	*create_context()
+void shutdown_ssl(SSL *ssl)
+{
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+}
+
+SSL_CTX	*ftp_srv_create_context()
 {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
     method = TLS_server_method();
+
+    ctx = SSL_CTX_new(method);
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    return ctx;
+}
+
+SSL_CTX	*ftp_client_create_context()
+{
+    const SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    method = TLS_client_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
@@ -67,11 +92,11 @@ void	configure_context(SSL_CTX *ctx)
     /* Set the key and cert */
     if (SSL_CTX_use_certificate_file(ctx, "server.crt", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
-	exit(EXIT_FAILURE);
+	    exit(EXIT_FAILURE);
     }
 
     if (SSL_CTX_use_PrivateKey_file(ctx, "server.key", SSL_FILETYPE_PEM) <= 0 ) {
         ERR_print_errors_fp(stderr);
-	exit(EXIT_FAILURE);
+	    exit(EXIT_FAILURE);
     }
 }

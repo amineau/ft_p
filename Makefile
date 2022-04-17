@@ -10,6 +10,7 @@ SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c server/respon
 			  ftp_action_4.c
 CLIENT_SRCS = client/main.c common/openssl.c common/read_sock.c
 
+DEBUGGER := gdb
 
 INCS = ft_p.h
 
@@ -73,6 +74,14 @@ generate_ssl:
 		# 	-days 365 -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=ft_p.42" -nodes
 		openssl req -new -newkey rsa:2048 -nodes -keyout server.key -out server.csr -subj "/CN=localhost"
 		openssl x509 -req -in server.csr -signkey server.key -out server.crt
+
+debug_server: CFLAGS += -g
+debug_server: $(OPATH) $(SERVER_NAME) $(INC)
+	$(DEBUGGER) $(SERVER_NAME)
+
+debug_client: CFLAGS += -g
+debug_client: $(OPATH) $(CLIENT_NAME) $(INC)
+	$(DEBUGGER) $(CLIENT_NAME)
 
 clean:
 		@printf "$(YELLOW)%-30s$(WHITE)" "Deleting $(OPATH)"

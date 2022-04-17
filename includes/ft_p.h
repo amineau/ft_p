@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 04:45:30 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 01:24:43 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@
 typedef enum	e_ftp_code
 {
 	_100, _120, _125, _150,
-	_200, _202, _211, _214, _220, _221, _226, _230, _234, _250, _257,
+	_200, _202, _211, _214, _220, _221, _226, _227,_230, _234, _250, _257,
 	_331, _332, _350,
 	_421, _425, _426, _430, _450, _451, _452,
 	_500, _501, _502, _503, _504, _506, _520, _530, _532, _550, _551, _552, _553,
@@ -86,7 +86,7 @@ typedef enum	e_ftp_code
 
 static const char *g_ftp_code_str[] = {
 	"100", "120", "125", "150",
-	"200", "202", "211", "214", "220", "221", "226", "230", "234", "250", "257",
+	"200", "202", "211", "214", "220", "221", "226", "227", "230", "234", "250", "257",
 	"331", "332", "350",
 	"421", "425", "426", "430", "450", "451", "452",
 	"500", "501", "502", "503", "504", "506", "520", "530", "532",
@@ -183,53 +183,65 @@ typedef struct	s_server_verbs
 	char*			user_info;
 }				t_server_verbs;
 
-typedef struct	s_env
+typedef struct s_srv_transfert
 {
-	int		cs;
-	SSL		*ssl;
+	int cs;
+	int sock;
+	SSL	*ssl;
+}				t_srv_transfert;
+
+typedef struct	s_svr_ftp
+{
+	t_srv_transfert	pi;
+	t_srv_transfert	dtp;
 	SSL_CTX **ctx;
 	t_bool	ssl_activated;
 	t_bool	debug;
-}				t_env;
+}				t_srv_ftp;
 
 typedef char			*(*t_client_action)(t_client_verbs*, int sock);
-typedef t_server_verbs	(*t_server_action)(t_client_verbs*, t_env*);
+typedef t_server_verbs	(*t_server_action)(t_client_verbs*, t_srv_ftp*);
 
 
 char*			ft_getcwd(void);
 char*			get_root(void);
 char*			get_wdir(void);
 
-t_server_verbs  cmd_not_implemented(char* str, t_env* env);
-t_server_verbs  cmd_username(t_client_verbs *cv, t_env* env);
-t_server_verbs  cmd_password(t_client_verbs *cv, t_env* env);
-t_server_verbs  cmd_account(t_client_verbs *cv, t_env* env);
-t_server_verbs  cmd_auth_method(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_change_workdir(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_logout(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_port(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_passive_mode(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_representation_type(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_retrieve(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_store(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_rename_from(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_rename_to(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_abort(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_delete(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_remove_dir(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_make_dir(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_print_workdir(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_list(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_system(t_client_verbs *cv, t_env* env);
-t_server_verbs	cmd_noop(t_client_verbs *cv, t_env* env);
+t_server_verbs  cmd_not_implemented(char* str, t_srv_ftp* srv_ftp);
+t_server_verbs  cmd_username(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs  cmd_password(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs  cmd_account(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs  cmd_auth_method(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_change_workdir(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_change_to_parent_dir(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_logout(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_port(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_passive_mode(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_representation_type(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_retrieve(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_store(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_rename_from(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_rename_to(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_abort(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_delete(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_remove_dir(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_make_dir(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_print_workdir(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_list(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_system(t_client_verbs *cv, t_srv_ftp* srv_ftp);
+t_server_verbs	cmd_noop(t_client_verbs *cv, t_srv_ftp* srv_ftp);
 
-int				response_to_client(t_env* env, t_ftp_code_enum code, char *description);
-int				received(t_env* env, char* buff);
+int				ftp_create_channel(int sock);
+int				ftp_accept_connection(int sock);
+int				ftp_srv_send_pi(t_srv_ftp* srv_ftp, t_ftp_code_enum code, char *description);
+int				ftp_srv_send_dtp(t_srv_ftp* srv_ftp, char *data, int len);
+int				received(t_srv_ftp* srv_ftp, char* buff);
 
 void			init_openssl();
 void			cleanup_openssl();
-SSL_CTX			*create_context();
+void			shutdown_ssl(SSL *ssl);
+SSL_CTX			*ftp_srv_create_context();
+SSL_CTX			*ftp_client_create_context();
 void			configure_context(SSL_CTX *ctx);
 void			ShowCerts(SSL* ssl);
 

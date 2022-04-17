@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.c                                           :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 11:11:23 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 01:42:51 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ int	user_lexer(const char *buff, t_client_verbs* cv)
 		return (-1);
 	else if ((code_command = ft_arraystr(g_user_cmd_str, split[0])) == -1)
 	{
-		printf("Unkwown command : [%s]\nType help for more information\n");
+		printf("Unkwown command : [%s]\nType help for more information\n", split[0]);
 		return (-1);
 	}
 	cv->cv_verb = split[0];
@@ -192,52 +192,63 @@ char*	user_parser(t_client_verbs* cv, int sock)
 	return (command[cv->cv_code](cv, sock));
 }
 
-int		send_to_remote(t_env *env, char* cmd)
+int		ftp_client_send_pi(t_srv_ftp *srv_ftp, char* cmd)
 {
 	int		ret;
 	char 	*str;
 
 	str = ft_strjoin(cmd, FTP_EOC);
-	if (env->debug == true)
-		ft_printf("Command : %s", str);
-	printf("%d\n", env->ssl_activated == true);
-	if (env->ssl_activated == true)
-		ret = SSL_write(env->ssl, str, ft_strlen(str));
+	if (srv_ftp->debug == true)
+		ft_printf("USER-PI: %s", str);
+	if (srv_ftp->ssl_activated == true)
+		ret = SSL_write(srv_ftp->pi.ssl, str, ft_strlen(str));
 	else
-		ret = write(env->cs, str, ft_strlen(str));
+		ret = write(srv_ftp->pi.cs, str, ft_strlen(str));
 	free(str);
 	return (ret);
 }
 
-char	listen_server(t_env *env)
+char	listen_server(t_srv_ftp *srv_ftp)
 {
 	int		r;
 	char	buff[BUFF_SIZE];
 
-	if ((r = received(env, buff)) > 0)
+	if ((r = received(srv_ftp, buff)) > 0)
 	{
-		// printf("%s\n", buff);
+		if (srv_ftp->debug)
+			printf("SERVER-PI: %s", buff);
 		return(buff[0]);
 	}
-	return(NULL);
+	exit(EXIT_FAILURE);
 }
 
-int		connection_protocol(t_env *env)
+int		connection_protocol(t_srv_ftp *srv_ftp, t_client_args	*ca)
 {
 	char	code_response;
+	int ret;
 
-	while((code_response = listen_server(env)) != '2')
+	while((code_response = listen_server(srv_ftp)) != '2')
 		;		
-	send_to_remote(env, "AUTH TLS");
-	while((code_response = listen_server(env)) != '2')
-		break;
+	ftp_client_send_pi(srv_ftp, "AUTH TLS");
+	srv_ftp->pi.ssl = SSL_new(*srv_ftp->ctx);
+	SSL_set_fd(srv_ftp->pi.ssl, srv_ftp->pi.cs);
+	while((code_response = listen_server(srv_ftp)) != '2')
 		;
-	if (SSL_connect(env->ssl) == -1)
-        ERR_print_errors_fp(stderr);
-	printf("Connected with %s encryption\n", SSL_get_cipher(env->ssl));
-	ShowCerts(env->ssl);
-	env->ssl_activated = true;
-	send_to_remote(env, "USER amineau");
+	if ((ret = SSL_connect(srv_ftp->pi.ssl)) <= 0){
+		printf("SSL_connect failed\n");
+		ERR_print_errors_fp(stderr);
+		exit(EXIT_FAILURE);
+	}
+	// printf("Connected with %s encryption\n", SSL_get_cipher(srv_ftp->pi.ssl));
+	// ShowCerts(srv_ftp->pi.ssl);
+	srv_ftp->ssl_activated = true;
+	ftp_client_send_pi(srv_ftp, ft_strjoin("USER ", ca->ca_user));
+	while((code_response = listen_server(srv_ftp)) != '3')
+		;
+	ftp_client_send_pi(srv_ftp, ft_strjoin("PASS ", ca->ca_pass));
+	while((code_response = listen_server(srv_ftp)) != '2')
+		;
+	ftp_client_send_pi(srv_ftp, ft_strjoin("PASS ", ca->ca_pass));
 }
 
 int		main(int ac, char **av)
@@ -247,41 +258,35 @@ int		main(int ac, char **av)
 	t_client_args	ca;
 	t_client_verbs	cv;
 	char*	cmd;
-	t_env	env;
-	SSL_CTX *ctx;
+	t_srv_ftp	srv_ftp;
+	SSL_CTX * ctx;
 
 	getargs(ac, av, &ca);
 	
 	init_openssl();
-	ctx = create_context();
-	env.cs = create_client(ca.ca_host , ca.ca_port);
-	env.ssl = SSL_new(ctx);
-	env.ssl_activated = false;
-	env.debug = ca.debug;
-	SSL_set_fd(env.ssl, env.cs);
-	// if ( SSL_connect(ssl) == -1)
-    //     ERR_print_errors_fp(stderr);
-    // else
-    // {
-		// printf("Connected with %s encryption\n", SSL_get_cipher(ssl));
-		// ShowCerts(ssl);        /* get any certs */
-        // SSL_write(ssl, "toto", 4);
-	connection_protocol(&env);
+	ctx = ftp_client_create_context();
+	srv_ftp.ctx = &ctx;
+	srv_ftp.pi.cs = create_client(ca.ca_host , ca.ca_port);
+	srv_ftp.pi.ssl = false;
+	srv_ftp.ssl_activated = false;
+	srv_ftp.debug = ca.debug;
+
+	connection_protocol(&srv_ftp, &ca);
 	while((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
 	{
 		if (user_lexer(buff, &cv) == -1)
 			continue;
-		if ((cmd = user_parser(&cv, env.cs)))
+		if ((cmd = user_parser(&cv, srv_ftp.pi.cs)))
 		{
-			send_to_remote(&env, cmd);
+			ftp_client_send_pi(&srv_ftp, cmd);
 			free(cmd);
 		}
 	}
-	SSL_free(env.ssl);
-	// }
-	printf("Client disconnected\n");
-	close(env.cs);
-	SSL_CTX_free(ctx);
+	SSL_free(srv_ftp.pi.ssl);
+
+	ft_printf("Client disconnected\n");
+	close(srv_ftp.pi.cs);
+	SSL_CTX_free(*srv_ftp.ctx);
 	cleanup_openssl();
 
 	// TODO : Split .h to remove these lines

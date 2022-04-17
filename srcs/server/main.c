@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 04:58:28 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 01:25:39 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	usage(char *str)
 	exit(-1);
 }
 
-int		create_server(int port)
+int		ftp_create_sock(int port)
 {
 	int					sock;
 	struct protoent		*proto;
@@ -28,6 +28,7 @@ int		create_server(int port)
 	if (!proto)
 		exit(-1);
 	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
+	bzero((char *) &sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -41,6 +42,14 @@ int		create_server(int port)
 			printf("Bind failed");
 		exit(-1);
 	}
+	return sock;
+}
+
+int		ftp_create_channel(int port)
+{
+	int sock;
+
+	sock = ftp_create_sock(port);
 	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
 	{
 		if (errno == ECONNREFUSED)
@@ -52,7 +61,7 @@ int		create_server(int port)
 	return(sock);
 }
 
-int		open_client(int sock)
+int		ftp_accept_connection(int sock)
 {
 	int					cs;
 	struct sockaddr_in	csin;
@@ -73,7 +82,7 @@ int		open_client(int sock)
 }
 
 // TODO : Merge with user_lexer (client.c)
-t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv)
+t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv, t_srv_ftp *srv_ftp)
 {
 	char**			split;
 	int				code_command;
@@ -81,7 +90,8 @@ t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv)
 
 	split = ft_strsplit(buff, ' ');
 	cv->cv_verb = ft_strrtrim(split[0]);
-	printf("SPLIT DEBUG : [%s]\n", cv->cv_verb);
+	if (srv_ftp->debug)
+		printf("USER-PI: %s", buff);
 	if (!cv->cv_verb || (code_command = ft_arraystr(g_ftp_cmd_str, cv->cv_verb)) == -1)
 	{
 		sv.sr_code = _500;
@@ -98,7 +108,7 @@ t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv)
 }
 
 // TODO : Merge with user_parser (client.c)
-t_server_verbs	ftp_parser(t_client_verbs* cv, t_env* env)
+t_server_verbs	ftp_parser(t_client_verbs* cv, t_srv_ftp* srv_ftp)
 {
 	t_server_action	command[] = {
 		cmd_username, cmd_password, cmd_account, cmd_auth_method, cmd_change_workdir,
@@ -106,8 +116,8 @@ t_server_verbs	ftp_parser(t_client_verbs* cv, t_env* env)
 		cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir,
 		cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_noop
 	};
-	printf("code : %d\nstr : %s\n", cv->cv_code, g_ftp_cmd_str[cv->cv_code]);
-	return (command[cv->cv_code](cv, env));
+	// printf("code : %d\nstr : %s\n", cv->cv_code, g_ftp_cmd_str[cv->cv_code]);
+	return (command[cv->cv_code](cv, srv_ftp));
 }
 
 void	listen_clients(int sock, SSL_CTX *ctx, t_bool debug)
@@ -117,57 +127,36 @@ void	listen_clients(int sock, SSL_CTX *ctx, t_bool debug)
 	// pid_t	pid;
 	t_client_verbs	cv;
 	t_server_verbs	sv;
-	t_env	env;
+	t_srv_ftp	srv_ftp;
 
 	while(1)
 	{
-		env.cs = open_client(sock);
-		env.ssl = NULL;
-		env.ctx = &ctx;
-		env.debug = debug;
-		// printf("socket : %d\nclient socket : %d\n", sock, env.cs);
-		response_to_client(&env, _220, "Server available for new user");
+		srv_ftp.pi.cs = ftp_accept_connection(sock);
+		srv_ftp.pi.ssl = NULL;
+		srv_ftp.dtp.cs = NULL;
+		srv_ftp.dtp.ssl = NULL;
+		srv_ftp.ssl_activated = false;
+		srv_ftp.ctx = &ctx;
+		srv_ftp.debug = debug;
+		// printf("socket : %d\nclient socket : %d\n", sock, srv_ftp.cs);
+		ftp_srv_send_pi(&srv_ftp, _220, "Server available for new user");
 
-		// env.ssl = SSL_new(ctx);
-        // SSL_set_fd(env.ssl, env.cs);
-        
-		// printf("SSL_accept : %d\n", SSL_accept(env.ssl));
-
-        // if (SSL_accept(env.ssl) <= 0) {
-        //     ERR_print_errors_fp(stderr);
-        // }
-        // else {
-        //     SSL_write(env.ssl, "toot", 4);
-        // }
-        // printf("ssl first : %p\n", env.ssl);
-		// const char * reply = "200 OK\r\n";
-		// printf("response SSL_accept : %d\n", SSL_accept(env.ssl));
-		// if (SSL_accept(env.ssl) <= 0) {
-		// 	printf("plip\n");			
-		// 	ERR_print_errors_fp(stderr);
-		// 	exit(EXIT_FAILURE);
-		// }
-		// else
-		// {
-		// 	printf("plop\n");
-		// 	printf("Before write\n");
-		// 	SSL_write(env.ssl, reply, ft_strlen(reply));
-		// 	printf("After write\n");
-		// }
-		while((r = received(&env, buff)) > 0)
+		while((r = received(&srv_ftp, buff)) > 0)
 		{
-			printf("while passing\n");
-			sv = ftp_lexer(buff, &cv);
+			sv = ftp_lexer(buff, &cv, &srv_ftp);
 			if (sv.sr_state == POS_TMP)
-				sv = ftp_parser(&cv, &env);
-			response_to_client(&env, sv.sr_code, sv.user_info);
+				sv = ftp_parser(&cv, &srv_ftp);
+			ftp_srv_send_pi(&srv_ftp, sv.sr_code, sv.user_info);
 			// printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
 		}
 		// printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
 		printf("Socket finished with %s\n", strerror(errno));
-        if (env.ssl)
-			SSL_free(env.ssl);
-		close(env.cs);
+        if (srv_ftp.pi.ssl)
+			SSL_free(srv_ftp.pi.ssl);
+		if (srv_ftp.dtp.ssl)
+		close(srv_ftp.pi.cs);
+		if (srv_ftp.dtp.cs)
+			close(srv_ftp.dtp.cs);
 	}
 }
 
@@ -223,7 +212,8 @@ int		main(int ac, char **av)
 
 	getargs(ac, av, &sa);
 
-	pid = fork();
+	// pid = fork();
+	pid = 0;
 	if (pid != 0)
 	{
 		char buff[BUFF_SIZE];
@@ -246,11 +236,11 @@ int		main(int ac, char **av)
 	else
 	{
 		init_openssl();
-		ctx = create_context();
+		ctx = ftp_srv_create_context();
 		configure_context(ctx);
 		
 		(void)get_root();
-		sock = create_server(sa.sa_port);
+		sock = ftp_create_channel(sa.sa_port);
 		listen_clients(sock, ctx, sa.debug);
 		close(sock);
 		SSL_CTX_free(ctx);

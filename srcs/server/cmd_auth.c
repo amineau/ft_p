@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2019/02/10 05:14:49 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 01:31:02 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ static int pamconv(int num_msg, const struct pam_message **msg,
     return PAM_SUCCESS;
 }
 
-t_server_verbs  cmd_username(t_client_verbs* cv, t_env* env)
+t_server_verbs  cmd_username(t_client_verbs* cv, t_srv_ftp* srv_ftp)
 {
     t_server_verbs          sv;
     const struct pam_conv   conv = {
@@ -65,7 +65,7 @@ t_server_verbs  cmd_username(t_client_verbs* cv, t_env* env)
     return (sv);
 }
 
-t_server_verbs  cmd_password(t_client_verbs* cv, t_env* env)
+t_server_verbs  cmd_password(t_client_verbs* cv, t_srv_ftp* srv_ftp)
 {
     t_server_verbs  sv;
     int             pam_status;
@@ -93,37 +93,51 @@ t_server_verbs  cmd_password(t_client_verbs* cv, t_env* env)
     return (sv);
 }
 
-t_server_verbs  cmd_account(t_client_verbs* cv, t_env* env)
+t_server_verbs  cmd_account(t_client_verbs* cv, t_srv_ftp* srv_ftp)
 {
     (void)cv;
-    return (cmd_not_implemented(ACCOUNT, env));
+    return (cmd_not_implemented(ACCOUNT, srv_ftp));
 }
 
-t_server_verbs  cmd_auth_method(t_client_verbs* cv, t_env* env)
+int    wait_for_ssl_client(t_srv_ftp* srv_ftp)
+{
+    int pid;
+
+    srv_ftp->pi.ssl= SSL_new(*srv_ftp->ctx);
+    SSL_set_fd(srv_ftp->pi.ssl, srv_ftp->pi.cs);
+    pid = fork();
+    if (pid != 0)
+    {
+        if (SSL_accept(srv_ftp->pi.ssl) <= 0)
+        {
+            printf("Warning: SSL failed\n");
+            ERR_print_errors_fp(stderr);
+            shutdown_ssl(srv_ftp->pi.ssl);
+            return false;
+        }
+    } else {
+        ftp_srv_send_pi(srv_ftp, _234, "");
+        exit(EXIT_SUCCESS);
+    }
+    return true;
+
+}
+
+t_server_verbs  cmd_auth_method(t_client_verbs* cv, t_srv_ftp* srv_ftp)
 {
     t_server_verbs  sv;
 
     if (!ft_strcmp(cv->cv_arg, "TLS"))
     {
-        printf("DEBUG FLAG 1\n");
-        env->ssl = SSL_new(*env->ctx);
-        printf("ssl second : %p\n", env->ssl);
-        SSL_set_fd(env->ssl, env->cs);
-        response_to_client(env, _234, "");
-        // TODO : Probablement qu'il faut recreer une socket propre au ssl
-        if (SSL_accept(env->ssl) <= 0)
+        if (wait_for_ssl_client(srv_ftp))
         {
-            printf("DEBUG FLAG 2\n");
-            ERR_print_errors_fp(stderr);
-        }
-        else
-        {
-            printf("DEBUG FLAG 3\n");
-            env->ssl_activated = true;
-            sv.sr_code = _332;
+            srv_ftp->ssl_activated = true;
+            sv.sr_code = _NOCODE;
             sv.sr_state = POS_DEF;
-            sv.user_info = TLS_VERSION;
+            sv.user_info = "";
             return (sv);
+        } else {
+            // echec du serveur
         }
     }
     sv.sr_code = _520;
