@@ -6,7 +6,7 @@
 #    By: amineau <amineau@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/11/23 15:32:27 by amineau           #+#    #+#              #
-#    Updated: 2022/04/17 12:36:11 by amineau          ###   ########.fr        #
+#    Updated: 2022/04/21 22:36:05 by amineau          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,10 +33,12 @@ SRCS += ft_putchar.c ft_putstr.c ft_putendl.c ft_putnbr.c ft_strlen.c \
 		ft_putstr_fd.c ft_putendl_fd.c ft_putnbr_fd.c ft_lstnew.c \
 		ft_lstdelone.c ft_lstdel.c ft_lstadd.c ft_lstiter.c ft_lstmap.c \
 		ft_min.c ft_max.c ft_putnbrendl.c ft_strclnjoin.c ft_strndup.c \
-		get_next_line.c ft_abs.c ft_strcasecmp.c ft_strnchr.c ft_itoa_base.c \
+		ft_abs.c ft_strcasecmp.c ft_strnchr.c ft_itoa_base.c \
 		ft_power.c ft_strcln1join.c ft_itoa_unsi.c ft_itoa_unsi_base.c \
 		ft_strcln2join.c ft_atoi_base.c ft_atol.c ft_strcjoin.c ft_arraystr.c \
-		ft_arrayjoin.c ft_arraycjoin.c ft_strrtrim.c ft_arrayfree.c
+		ft_arrayjoin.c ft_arraycjoin.c ft_strrtrim.c ft_arrayfree.c \
+		ft_isnumber.c ft_strncasecmp.c get_next_line.c get_next_line_ssl.c \
+		ft_lstfindfirst.c ft_lstremoveelem.c ft_lstaddend.c
 
 SRCDIR = srcs
 OBJDIR = objs
@@ -53,7 +55,10 @@ GREEN	= \033[0;32m
 YELLOW	= \033[33m
 CYAN	= \033[36m
 
+.PHONY: all
+
 all: $(NAME)
+	@:
 
 $(NAME): $(OBJ)
 	@printf "$(YELLOW)%-30s$(WHITE)" "Building $@"

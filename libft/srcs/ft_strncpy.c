@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strncpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: amineau <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/24 14:27:33 by amineau           #+#    #+#             */
-/*   Updated: 2016/02/27 18:55:41 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/18 22:44:23 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,6 @@ char	*ft_strncpy(char *dst, const char *src, size_t n)
 	}
 	while (i < n)
 		dst[i++] = '\0';
+	dst[n] = '\0';
 	return (dst);
 }

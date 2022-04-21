@@ -1,27 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_straddc.c                                       :+:      :+:    :+:   */
+/*   ft_strncasecmp.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/02/26 04:20:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/19 10:19:53 by amineau          ###   ########.fr       */
+/*   Created: 2016/02/22 17:54:40 by amineau           #+#    #+#             */
+/*   Updated: 2022/04/19 22:24:08 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "libft.h"
 
-char	*ft_straddc(const char *str, char c)
+int ft_strncasecmp(const char *s1, const char *s2, size_t n)
 {
-	char	*dest;
-	int		i;
+	size_t i;
 
-	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
-		return (NULL);
-	dest = ft_strcpy(dest, str);
-	dest[i] = (char)c;
-	dest[i + 1] = '\0';
-	return (dest);
+	i = 0;
+	while (((ft_islower(s1[i]) && s1[i] == s2[i] + 32) ||
+			(ft_isupper(s1[i]) && s1[i] == s2[i] - 32) ||
+			(s1[i] == s2[i])) &&
+		   (s1[i] || s2[i]) &&
+		   i + 1 < n)
+		i++;
+	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }

@@ -1,27 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_straddc.c                                       :+:      :+:    :+:   */
+/*   ft_lstfindfirst.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/02/26 04:20:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/19 10:19:53 by amineau          ###   ########.fr       */
+/*   Created: 2015/11/30 17:04:53 by amineau           #+#    #+#             */
+/*   Updated: 2022/04/21 20:22:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "libft.h"
 
-char	*ft_straddc(const char *str, char c)
+t_list *ft_lstfindfirst(t_list *lst, void const *content, int (*f)(t_list *, void const *))
 {
-	char	*dest;
-	int		i;
-
-	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
+	if (!lst || !f)
 		return (NULL);
-	dest = ft_strcpy(dest, str);
-	dest[i] = (char)c;
-	dest[i + 1] = '\0';
-	return (dest);
+
+	while (lst)
+	{
+		if (f(lst, content))
+			return lst;
+		lst = lst->next;
+	}
+	return NULL;
 }

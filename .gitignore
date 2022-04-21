@@ -39,6 +39,8 @@
 *.crt
 *.csr
 
+*.pdf
+
 server
 client
 !server/

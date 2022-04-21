@@ -1,27 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_straddc.c                                       :+:      :+:    :+:   */
+/*   ft_lstremoveelem.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/02/26 04:20:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/19 10:19:53 by amineau          ###   ########.fr       */
+/*   Created: 2015/11/30 16:34:12 by amineau           #+#    #+#             */
+/*   Updated: 2022/04/21 14:23:58 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "libft.h"
 
-char	*ft_straddc(const char *str, char c)
+void ft_lstremoveelem(t_list **alst, t_list *elem)
 {
-	char	*dest;
-	int		i;
+	t_list *list;
 
-	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
-		return (NULL);
-	dest = ft_strcpy(dest, str);
-	dest[i] = (char)c;
-	dest[i + 1] = '\0';
-	return (dest);
+	list = *alst;
+	if (list == elem)
+	{
+		*alst = list->next;
+		return;
+	}
+	while (list)
+	{
+		if (list->next == elem)
+		{
+			list->next = elem->next;
+			return;
+		}
+		list = list->next;
+	}
 }

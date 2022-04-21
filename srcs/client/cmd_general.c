@@ -1,27 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_straddc.c                                       :+:      :+:    :+:   */
+/*   cmd_general.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/02/26 04:20:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/19 10:19:53 by amineau          ###   ########.fr       */
+/*   Created: 2022/04/21 00:16:01 by amineau           #+#    #+#             */
+/*   Updated: 2022/04/21 01:34:56 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_p.h"
 
-char	*ft_straddc(const char *str, char c)
+void put_req_arg(char *cmd)
 {
-	char	*dest;
-	int		i;
+	printf("Argument is required for this command [%s]\n", cmd);
+}
 
-	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
-		return (NULL);
-	dest = ft_strcpy(dest, str);
-	dest[i] = (char)c;
-	dest[i + 1] = '\0';
-	return (dest);
+void put_no_req_arg(char *cmd)
+{
+	printf("This command [%s] is used without arguments\n", cmd);
+}
+
+int ftp_cli_cmd_help(t_cli_ftp *cli_ftp, const char *args)
+{
+	(void)args;
+	(void)cli_ftp;
+	printf("ls,cd,get,put,pwd,quit,help\n");
+	return 1;
 }

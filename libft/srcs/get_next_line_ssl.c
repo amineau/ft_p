@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_ssl.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/01/04 10:54:48 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:22:28 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/21 23:35:53 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,20 +78,20 @@ static char *ft_store(char **remainder, char *next_line, const char *eol)
 	return (*remainder);
 }
 
-static t_fd_remainder *build_remainder_content(int fd, char **remainder)
+static t_ssl_remainder *build_remainder_content(SSL *ssl, char **remainder)
 {
-	t_fd_remainder *fd_remainder;
+	t_ssl_remainder *ssl_remainder;
 
-	fd_remainder = (t_fd_remainder *)malloc(sizeof(t_fd_remainder));
-	fd_remainder->fd = fd;
-	fd_remainder->remainder = remainder;
-	*fd_remainder->remainder = NULL;
-	return fd_remainder;
+	ssl_remainder = (t_ssl_remainder *)malloc(sizeof(t_ssl_remainder));
+	ssl_remainder->ssl = ssl;
+	ssl_remainder->remainder = remainder;
+	*ssl_remainder->remainder = NULL;
+	return ssl_remainder;
 }
 
-static int is_fd_elem(t_list *elem, const void *fd)
+static int is_ssl_elem(t_list *elem, const void *ssl)
 {
-	return (elem->content && ((t_fd_remainder *)elem->content)->fd == *(int *)fd);
+	return (elem->content && ((t_ssl_remainder *)elem->content)->ssl == *(SSL **)ssl);
 }
 
 static t_list **get_static_list()
@@ -106,21 +106,21 @@ static t_list **get_static_list()
 	return alst;
 }
 
-static char **get_remained(const int fd)
+static char **get_remained(SSL *ssl)
 {
-	t_list        **alst;
-	t_list         *elem;
-	t_fd_remainder *content;
-	char          **remainder;
+	t_list         **alst;
+	t_list          *elem;
+	t_ssl_remainder *content;
+	char           **remainder;
 
 	alst = get_static_list();
 
-	elem = ft_lstfindfirst(*alst, &fd, &is_fd_elem);
+	elem = ft_lstfindfirst(*alst, &ssl, &is_ssl_elem);
 	if (!elem)
 	{
 		remainder = (char **)malloc(sizeof(char *));
-		content = build_remainder_content(fd, remainder);
-		elem = ft_lstnew(content, sizeof(t_fd_remainder));
+		content = build_remainder_content(ssl, remainder);
+		elem = ft_lstnew(content, sizeof(t_ssl_remainder));
 		if (!*alst)
 		{
 			*alst = elem;
@@ -128,25 +128,25 @@ static char **get_remained(const int fd)
 		else
 			ft_lstaddend(alst, elem);
 	}
-	return (((t_fd_remainder *)elem->content)->remainder);
+	return (((t_ssl_remainder *)elem->content)->remainder);
 }
 
-static void clean_remained(const int fd)
+static void clean_remained(SSL *ssl)
 {
 	t_list **alst;
 	t_list  *elem;
 
 	alst = get_static_list();
 
-	elem = ft_lstfindfirst(*alst, &fd, &is_fd_elem);
+	elem = ft_lstfindfirst(*alst, &ssl, &is_ssl_elem);
 
 	ft_lstremoveelem(alst, elem);
-	ft_strdel(((t_fd_remainder *)elem->content)->remainder);
+	ft_strdel(((t_ssl_remainder *)elem->content)->remainder);
 	ft_memdel((void **)&elem->content);
 	ft_memdel((void **)&elem);
 }
 
-int get_next_line_eol(const int fd, char **line, const char *eol)
+int get_next_line_ssl_eol(SSL *ssl, char **line, const char *eol)
 {
 	char  *buff;
 	char **remainder;
@@ -154,9 +154,9 @@ int get_next_line_eol(const int fd, char **line, const char *eol)
 	char  *next_line;
 	int    return_code;
 
-	remainder = get_remained(fd);
+	remainder = get_remained(ssl);
 
-	if (fd < 0 || line == NULL)
+	if (!ssl || line == NULL)
 		return (-1);
 	*line = NULL;
 	if (ft_get_line_in_remainder(remainder, line, eol))
@@ -165,7 +165,7 @@ int get_next_line_eol(const int fd, char **line, const char *eol)
 	while (return_code == -1)
 	{
 		buff = ft_memalloc(sizeof(char) * (BUFF_SIZE + 1));
-		if ((size = read(fd, buff, BUFF_SIZE)) == -1)
+		if ((size = SSL_read(ssl, buff, BUFF_SIZE)) == -1)
 			return (-1);
 		buff[size] = '\0';
 		next_line = ft_get_next_line(buff, eol);
@@ -180,11 +180,11 @@ int get_next_line_eol(const int fd, char **line, const char *eol)
 			return_code = 1;
 	}
 	if (!return_code)
-		clean_remained(fd);
+		clean_remained(ssl);
 	return (return_code);
 }
 
-int get_next_line(const int fd, char **line)
+int get_next_line_ssl(SSL *ssl, char **line)
 {
-	return get_next_line_eol(fd, line, "\n");
+	return get_next_line_ssl_eol(ssl, line, "\n");
 }

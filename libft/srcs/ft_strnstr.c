@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strnstr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: amineau <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/25 10:52:30 by amineau           #+#    #+#             */
-/*   Updated: 2015/12/02 11:31:00 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/19 10:05:53 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ char	*ft_strnstr(const char *s1, const char *s2, size_t n)
 		j = 0;
 		if (s1[i] == s2[j])
 		{
-			while (s1[i + j] == s2[j] && s2[j] != '\0' && i + j < n)
+			while (s1[i + j] == s2[j] && s2[j] != '\0')
 				j++;
 			if (s2[j] == '\0')
 				return ((char*)s1 + i);

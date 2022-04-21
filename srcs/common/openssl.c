@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/18 02:19:49 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/18 01:27:01 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/19 13:19:02 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ SSL_CTX	*ftp_srv_create_context()
     return ctx;
 }
 
-SSL_CTX	*ftp_client_create_context()
+SSL_CTX	*ftp_cli_create_context()
 {
     const SSL_METHOD *method;
     SSL_CTX *ctx;

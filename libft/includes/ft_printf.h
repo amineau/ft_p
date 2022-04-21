@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/25 13:15:08 by amineau           #+#    #+#             */
-/*   Updated: 2018/08/15 13:17:59 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/19 10:19:56 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ char			*stock_flag(t_format *lst, char *str);
 char			*stock_width(int *width, int *wild, char *pourc);
 char			*stock_precision(int *prec, char *pourc, int width);
 char			*stock_lenght(char **str, char *pourc);
-char			*ft_straddc(char *str, char c);
+char			*ft_straddc(const char *str, char c);
 char			*ft_wh(char c, int n);
 char			*ft_decimal(long double nb, int prec);
 char			*ft_exposant(char e, int dec);

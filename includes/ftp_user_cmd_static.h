@@ -1,27 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_straddc.c                                       :+:      :+:    :+:   */
+/*   ftp_user_cmd_static.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/02/26 04:20:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/19 10:19:53 by amineau          ###   ########.fr       */
+/*   Created: 2022/04/19 12:47:47 by amineau           #+#    #+#             */
+/*   Updated: 2022/04/19 12:57:12 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#ifndef FTP_USER_CMD_STATIC_H
+# define FTP_USER_CMD_STATIC_H
 
-char	*ft_straddc(const char *str, char c)
-{
-	char	*dest;
-	int		i;
+# include "ft_p.h"
 
-	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
-		return (NULL);
-	dest = ft_strcpy(dest, str);
-	dest[i] = (char)c;
-	dest[i + 1] = '\0';
-	return (dest);
-}
+static const char*	g_user_cmd_str[] = {
+	// "ls",
+	"cd",
+	// "get",
+	// "put",
+	"pwd",
+	"quit",
+	"help",
+	NULL
+};
+
+#endif

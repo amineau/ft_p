@@ -6,29 +6,32 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/18 01:25:39 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/21 23:38:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_p.h"
+#include "ftp_srv_cmd_static.h"
 
-void	usage(char *str)
+t_bool debug;
+
+void usage(char *str)
 {
 	printf("Usage: %s <port> [-r <root directory>] [-d <debug>]\n", str);
-	exit(-1);
+	;
 }
 
-int		ftp_create_sock(int port)
+int ftp_create_sock(int port)
 {
-	int					sock;
-	struct protoent		*proto;
-	struct sockaddr_in	sin;
+	int                sock;
+	struct protoent   *proto;
+	struct sockaddr_in sin;
 
 	proto = getprotobyname("tcp");
 	if (!proto)
-		exit(-1);
+		exit(EXIT_FAILURE);
 	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-	bzero((char *) &sin, sizeof(sin));
+	bzero((char *)&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -36,16 +39,16 @@ int		ftp_create_sock(int port)
 	{
 		if (errno == EACCES)
 			printf("This address is protected\n");
-		else if(errno == EADDRINUSE)
+		else if (errno == EADDRINUSE)
 			printf("This address is already in use\n");
 		else
 			printf("Bind failed");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	return sock;
 }
 
-int		ftp_create_channel(int port)
+int ftp_create_channel(int port)
 {
 	int sock;
 
@@ -56,16 +59,16 @@ int		ftp_create_channel(int port)
 			printf("The queue is full");
 		else
 			printf("Listen failed");
-		exit(-1);
+		return (-1);
 	}
-	return(sock);
+	return (sock);
 }
 
-int		ftp_accept_connection(int sock)
+int ftp_accept_connection(int sock)
 {
-	int					cs;
-	struct sockaddr_in	csin;
-	unsigned int		cslen;
+	int                cs;
+	struct sockaddr_in csin;
+	unsigned int       cslen;
 
 	errno = 0;
 	cslen = sizeof(csin);
@@ -82,16 +85,21 @@ int		ftp_accept_connection(int sock)
 }
 
 // TODO : Merge with user_lexer (client.c)
-t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv, t_srv_ftp *srv_ftp)
+t_server_verbs ftp_lexer(const char *buff, t_client_verbs *cv)
 {
-	char**			split;
-	int				code_command;
-	t_server_verbs	sv;
+	char		 **split;
+	int            code_command;
+	t_server_verbs sv;
 
 	split = ft_strsplit(buff, ' ');
 	cv->cv_verb = ft_strrtrim(split[0]);
-	if (srv_ftp->debug)
-		printf("USER-PI: %s", buff);
+	if (debug)
+	{
+		if (!ft_strcmp(cv->cv_verb, "PASS"))
+			printf("\033[0;34mUSER-PI: %s ****\n\033[0m", cv->cv_verb);
+		else
+			printf("\033[0;34mUSER-PI: %s\033[0m\n", buff);
+	}
 	if (!cv->cv_verb || (code_command = ft_arraystr(g_ftp_cmd_str, cv->cv_verb)) == -1)
 	{
 		sv.sr_code = _500;
@@ -108,59 +116,62 @@ t_server_verbs	ftp_lexer(const char *buff, t_client_verbs* cv, t_srv_ftp *srv_ft
 }
 
 // TODO : Merge with user_parser (client.c)
-t_server_verbs	ftp_parser(t_client_verbs* cv, t_srv_ftp* srv_ftp)
+t_server_verbs ftp_parser(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
-	t_server_action	command[] = {
-		cmd_username, cmd_password, cmd_account, cmd_auth_method, cmd_change_workdir,
-		cmd_change_to_parent_dir, cmd_logout, cmd_port, cmd_passive_mode, cmd_representation_type, cmd_retrieve, cmd_store,
-		cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir,
-		cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_noop
-	};
-	// printf("code : %d\nstr : %s\n", cv->cv_code, g_ftp_cmd_str[cv->cv_code]);
+	t_server_action command[] = {
+		cmd_username, cmd_password, cmd_account, cmd_auth_method, cmd_change_workdir, cmd_change_to_parent_dir, cmd_logout, cmd_port, cmd_passive_mode, cmd_representation_type, cmd_retrieve, cmd_store, cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir, cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_protection_buffer_size, cmd_protection, cmd_noop};
 	return (command[cv->cv_code](cv, srv_ftp));
 }
 
-void	listen_clients(int sock, SSL_CTX *ctx, t_bool debug)
+t_srv_ftp *ftp_srv_ftp_init()
 {
-	int		r;
-	char	buff[BUFF_SIZE];
-	// pid_t	pid;
-	t_client_verbs	cv;
-	t_server_verbs	sv;
-	t_srv_ftp	srv_ftp;
+	t_srv_ftp *srv_ftp;
 
-	while(1)
-	{
-		srv_ftp.pi.cs = ftp_accept_connection(sock);
-		srv_ftp.pi.ssl = NULL;
-		srv_ftp.dtp.cs = NULL;
-		srv_ftp.dtp.ssl = NULL;
-		srv_ftp.ssl_activated = false;
-		srv_ftp.ctx = &ctx;
-		srv_ftp.debug = debug;
-		// printf("socket : %d\nclient socket : %d\n", sock, srv_ftp.cs);
-		ftp_srv_send_pi(&srv_ftp, _220, "Server available for new user");
-
-		while((r = received(&srv_ftp, buff)) > 0)
-		{
-			sv = ftp_lexer(buff, &cv, &srv_ftp);
-			if (sv.sr_state == POS_TMP)
-				sv = ftp_parser(&cv, &srv_ftp);
-			ftp_srv_send_pi(&srv_ftp, sv.sr_code, sv.user_info);
-			// printf("received %d bytes on pid %d : [%s]\n", r, pid, buff);
-		}
-		// printf("Socket with pid %d finished with %s\n", pid, strerror(errno));
-		printf("Socket finished with %s\n", strerror(errno));
-        if (srv_ftp.pi.ssl)
-			SSL_free(srv_ftp.pi.ssl);
-		if (srv_ftp.dtp.ssl)
-		close(srv_ftp.pi.cs);
-		if (srv_ftp.dtp.cs)
-			close(srv_ftp.dtp.cs);
-	}
+	srv_ftp = (t_srv_ftp *)malloc(sizeof(t_srv_ftp));
+	srv_ftp->ctx = NULL;
+	srv_ftp->pi.cs = 0;
+	srv_ftp->pi.ssl = NULL;
+	srv_ftp->dtp.cs = 0;
+	srv_ftp->dtp.ssl = NULL;
+	srv_ftp->pi.ssl_activated = false;
+	srv_ftp->dtp.ssl_activated = false;
+	return (srv_ftp);
 }
 
-void	getargs(int ac, char** av, struct s_server_args *sa)
+void listen_clients(int sock, SSL_CTX *ctx)
+{
+	int   r;
+	char *buff;
+	// pid_t          pid;
+	t_client_verbs cv;
+	t_server_verbs sv;
+	t_srv_ftp     *srv_ftp = ftp_srv_ftp_init();
+
+	srv_ftp->pi.cs = ftp_accept_connection(sock);
+	srv_ftp->ctx = &ctx;
+	ftp_srv_send_pi(&srv_ftp->pi, _220, "Server available for new user");
+
+	while ((r = get_next_line_wrapper(srv_ftp->pi.cs,
+									  srv_ftp->pi.ssl,
+									  srv_ftp->pi.ssl_activated,
+									  &buff)) >= 0)
+	{
+		sv = ftp_lexer(buff, &cv);
+		if (sv.sr_state == POS_TMP)
+			sv = ftp_parser(&cv, srv_ftp);
+		ftp_srv_send_pi(&srv_ftp->pi, sv.sr_code, sv.user_info);
+	}
+	printf("Socket finished with %s\n", strerror(errno));
+	if (srv_ftp->pi.ssl)
+		shutdown_ssl(srv_ftp->pi.ssl);
+	if (srv_ftp->dtp.ssl)
+		shutdown_ssl(srv_ftp->dtp.ssl);
+	close(srv_ftp->pi.cs);
+	if (srv_ftp->dtp.cs)
+		close(srv_ftp->dtp.cs);
+}
+
+void getargs(int ac, char **av, struct s_server_args *sa)
 {
 	char opt;
 
@@ -168,31 +179,19 @@ void	getargs(int ac, char** av, struct s_server_args *sa)
 		usage(av[0]);
 	sa->sa_port = ft_atoi(av[1]);
 	sa->sa_root = ft_getcwd();
-	sa->debug = false;
+	sa->sa_debug = false;
 	while ((opt = (char)getopt(ac, av, "rd")) != -1)
 	{
 		if (opt == 'r')
 			sa->sa_root = av[optind];
 		else if (opt == 'd')
-			sa->debug = true;
+			sa->sa_debug = true;
 		else
 			usage(av[0]);
 	}
-	if (chdir(sa->sa_root) == -1)
-	{
-		if (errno == EACCES)
-			printf("%s : Permission denied\n", sa->sa_root);
-		else if (errno == ENOTDIR)
-			printf("%s : Not a directory\n", sa->sa_root);
-		else if (errno == ENOENT)
-			printf("%s : No such file or directory\n", sa->sa_root);
-		else
-			printf("chdir failed\n");
-		exit(-1);
-	}
 }
 
-void	sig_handler(int signo)
+void sig_handler(int signo)
 {
 	if (signo == SIGINT)
 	{
@@ -203,52 +202,78 @@ void	sig_handler(int signo)
 	}
 }
 
-int		main(int ac, char **av)
+void ftp_srv_user_prompt()
 {
-	t_server_args	sa;
-	int 			sock;
-	SSL_CTX *ctx;
-	int pid;
-
-	getargs(ac, av, &sa);
-
-	// pid = fork();
-	pid = 0;
-	if (pid != 0)
+	char *buff;
+	while (get_next_line(STDIN_FILENO, &buff) > 0)
 	{
-		char buff[BUFF_SIZE];
-		int r;
-		while((r = read(STDIN_FILENO, buff, BUFF_SIZE)))
+		if (!ft_strcasecmp("kill", buff))
+			break;
+		else
 		{
-			buff[r - 1] = '\0';
-			if (!ft_strcasecmp("kill", buff))
-			{
-				ft_putendl("Server exited");
-				exit(-1);
-			}
-			else
-			{
-				ft_putendl("Command failed");
-				printf("[%s]\n", buff);
-			}
+			ft_putendl("Command failed");
+			printf("[%s]\n", buff);
 		}
 	}
+}
+
+void ftp_srv_run(int port)
+{
+	SSL_CTX *ctx;
+	int      sock;
+
+	init_openssl();
+	ctx = ftp_srv_create_context();
+	configure_context(ctx);
+
+	sock = ftp_create_channel(port);
+	listen_clients(sock, ctx);
+	close(sock);
+
+	SSL_CTX_free(ctx);
+	cleanup_openssl();
+}
+
+void ftp_print_chdir_error(const char *path)
+{
+	if (errno == EACCES)
+		printf("%s : Permission denied\n", path);
+	else if (errno == ENOTDIR)
+		printf("%s : Not a directory\n", path);
+	else if (errno == ENOENT)
+		printf("%s : No such file or directory\n", path);
 	else
+		printf("chdir failed\n");
+}
+
+void ftp_init_root_dir(const char *rootpath)
+{
+	if (chdir(rootpath) == -1)
 	{
-		init_openssl();
-		ctx = ftp_srv_create_context();
-		configure_context(ctx);
-		
-		(void)get_root();
-		sock = ftp_create_channel(sa.sa_port);
-		listen_clients(sock, ctx, sa.debug);
-		close(sock);
-		SSL_CTX_free(ctx);
-		cleanup_openssl();
-		// TODO : Split .h to remove these lines
-		(void)g_user_cmd_str;
-		(void)g_ftp_cmd_str;
-		(void)g_ftp_code_str;
+		ftp_print_chdir_error(rootpath);
+		exit(EXIT_FAILURE);
 	}
-	return(0);
+	init_root_static();
+}
+
+void ftp_set_debug(t_bool sa_debug)
+{
+	debug = sa_debug;
+}
+
+int main(int ac, char **av)
+{
+	t_server_args sa;
+	int           pid;
+
+	getargs(ac, av, &sa);
+	ftp_set_debug(sa.sa_debug);
+	ftp_init_root_dir(sa.sa_root);
+	pid = fork();
+	if (pid != 0)
+		ftp_srv_user_prompt();
+	else
+		ftp_srv_run(sa.sa_port);
+	printf("Client disconnected");
+	return (EXIT_SUCCESS);
 }

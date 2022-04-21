@@ -3,12 +3,16 @@ CLIENT_NAME = client
 
 CC = gcc
 
-SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c server/response_to_client.c \
-			  server/get_dir.c server/cmd_files_management.c server/cmd_transfert.c common/openssl.c \
-			  common/read_sock.c
+SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c \
+			  server/responses.c server/get_dir.c \
+			  server/cmd_files_management.c server/cmd_transfert.c \
+			  common/openssl.c common/read_sock.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
-CLIENT_SRCS = client/main.c common/openssl.c common/read_sock.c
+CLIENT_SRCS = client/main.c common/openssl.c \
+			  common/read_sock.c common/utils.c client/cmd_auth.c \
+			  client/cmd_files_management.c client/responses.c \
+			  client/cmd_general.c client/lexer.c client/protocol.c
 
 DEBUGGER := gdb
 
@@ -20,7 +24,7 @@ OPATH    = objs
 HPATH    = includes
 LFTHPATH = $(LFTPATH)/includes
 
-CFLAGS = -Wall -Wextra -g # TODO : Adding -Werror
+CFLAGS = -Wall -Wextra -Werror -g
 IFLAGS = -I./$(HPATH) -I./$(LFTHPATH)
 LIBS   = -L./$(LFTPATH) -lprt -lpam -lpam_misc -lssl -lcrypto
 
@@ -38,7 +42,10 @@ GREEN   = \033[0;32m
 YELLOW  = \033[33m
 CYAN    = \033[36m
 
+.PHONY: all
+
 all: $(OPATH) $(INC) $(SERVER_NAME) $(CLIENT_NAME)
+	@:
 
 $(SERVER_NAME): $(SERVER_OBJ)
 		@echo "$(YELLOW)Compilation Libft$(WHITE)"
@@ -75,11 +82,9 @@ generate_ssl:
 		openssl req -new -newkey rsa:2048 -nodes -keyout server.key -out server.csr -subj "/CN=localhost"
 		openssl x509 -req -in server.csr -signkey server.key -out server.crt
 
-debug_server: CFLAGS += -g
 debug_server: $(OPATH) $(SERVER_NAME) $(INC)
 	$(DEBUGGER) $(SERVER_NAME)
 
-debug_client: CFLAGS += -g
 debug_client: $(OPATH) $(CLIENT_NAME) $(INC)
 	$(DEBUGGER) $(CLIENT_NAME)
 
