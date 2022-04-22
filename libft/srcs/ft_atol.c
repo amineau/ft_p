@@ -12,17 +12,17 @@
 
 #include "libft.h"
 
-long	ft_atol(const char *str)
+long ft_atol(const char *str)
 {
-	int		i;
-	int		neg;
-	long	nb;
+	int  i;
+	int  neg;
+	long nb;
 
 	i = 0;
 	nb = 0;
 	neg = 1;
-	while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n'
-			|| str[i] == '\v' || str[i] == '\r' || str[i] == '\f')
+	while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n' ||
+		   str[i] == '\v' || str[i] == '\r' || str[i] == '\f')
 		i++;
 	if (str[i] == 45 || str[i] == 43)
 	{

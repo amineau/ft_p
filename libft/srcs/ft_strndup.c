@@ -12,12 +12,12 @@
 
 #include "libft.h"
 
-char	*ft_strndup(const char *s1, size_t n)
+char *ft_strndup(const char *s1, size_t n)
 {
-	char	*s2;
-	size_t	i;
+	char  *s2;
+	size_t i;
 
-	if (!(s2 = (char*)malloc(sizeof(*s1) * (ft_strlen(s1) + 1))))
+	if (!(s2 = (char *)malloc(sizeof(*s1) * (ft_strlen(s1) + 1))))
 		return (NULL);
 	i = 0;
 	while (s1[i] && i < n)

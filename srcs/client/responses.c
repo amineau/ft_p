@@ -20,11 +20,10 @@ t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 
 	srv_verbs = NULL;
 	while (!srv_verbs &&
-		   (ret = get_next_line_wrapper(
-				cli_ftp->pi.sock,
-				cli_ftp->pi.ssl,
-				cli_ftp->pi.ssl_activated,
-				&buff)) > 0)
+		   (ret = get_next_line_wrapper(cli_ftp->pi.sock,
+										cli_ftp->pi.ssl,
+										cli_ftp->pi.ssl_activated,
+										&buff)) > 0)
 	{
 		if (debug)
 			printf("\033[0;32mSERVER-PI: %s\033[0m\n", buff);

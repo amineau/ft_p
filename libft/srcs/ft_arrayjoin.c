@@ -12,29 +12,29 @@
 
 #include "libft.h"
 
-static size_t	cnt_char(char **s)
+static size_t cnt_char(char **s)
 {
-	size_t	cnt;
-    int i;
+	size_t cnt;
+	int    i;
 
 	cnt = 0;
-    i = 0;
+	i = 0;
 	while (s && s[i] != NULL)
-        cnt += ft_strlen(s[i++]);
+		cnt += ft_strlen(s[i++]);
 	return cnt;
 }
 
-char	*ft_arrayjoin(char **s)
+char *ft_arrayjoin(char **s)
 {
-	char	*dst;
-	int		i;
+	char *dst;
+	int   i;
 
 	i = 0;
-	if (!(dst = (char*)malloc(sizeof(char) * cnt_char(s) + 1)))
+	if (!(dst = (char *)malloc(sizeof(char) * cnt_char(s) + 1)))
 		return (NULL);
 	while (s && *s != NULL)
 	{
-		while(**s)
+		while (**s)
 			dst[i++] = *(*s)++;
 		s++;
 	}

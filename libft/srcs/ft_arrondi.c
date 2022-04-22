@@ -12,19 +12,19 @@
 
 #include "ft_printf.h"
 
-int			ft_arrondi(long double nb)
+int ft_arrondi(long double nb)
 {
 	if (nb - (int)nb < 0.5)
 		return ((int)nb);
 	return ((int)(nb + 1));
 }
 
-long double	ft_arrondi_double(long double nb, size_t dec)
+long double ft_arrondi_double(long double nb, size_t dec)
 {
 	long double tmp;
-	int			neg;
-	uintmax_t	pow;
-	intmax_t	tmp_int;
+	int         neg;
+	uintmax_t   pow;
+	intmax_t    tmp_int;
 
 	pow = ft_power(dec, 10);
 	tmp = (nb < 0) ? -nb * pow : nb * pow;

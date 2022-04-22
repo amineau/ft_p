@@ -16,7 +16,9 @@ t_bool debug;
 
 void usage(char *str)
 {
-	printf("Usage: %s [-h <host>] [-p <port>] [-u <user name> [-w <passwd>]] [-d <debug>] -\n", str);
+	printf("Usage: %s [-h <host>] [-p <port>] [-u <user name> [-w <passwd>]] "
+		   "[-d <debug>] -\n",
+		   str);
 	exit(EXIT_FAILURE);
 }
 
@@ -58,14 +60,13 @@ void ftp_free_ssl(t_cli_ftp *cli_ftp)
 
 int user_parser(t_cli_ftp *cli_ftp, t_client_verbs *cv)
 {
-	t_client_action command[] = {
-		ftp_cli_cmd_list,
-		ftp_cli_cmd_change_workdir,
-		// get_file,
-		// put_file,
-		ftp_client_cmd_print_workdir,
-		ftp_cli_cmd_logout,
-		ftp_cli_cmd_help};
+	t_client_action command[] = {ftp_cli_cmd_list,
+								 ftp_cli_cmd_change_workdir,
+								 // get_file,
+								 // put_file,
+								 ftp_client_cmd_print_workdir,
+								 ftp_cli_cmd_logout,
+								 ftp_cli_cmd_help};
 	return (command[cv->cv_code](cli_ftp, cv->cv_arg));
 }
 

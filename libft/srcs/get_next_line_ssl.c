@@ -91,7 +91,8 @@ static t_ssl_remainder *build_remainder_content(SSL *ssl, char **remainder)
 
 static int is_ssl_elem(t_list *elem, const void *ssl)
 {
-	return (elem->content && ((t_ssl_remainder *)elem->content)->ssl == *(SSL **)ssl);
+	return (elem->content &&
+			((t_ssl_remainder *)elem->content)->ssl == *(SSL **)ssl);
 }
 
 static t_list **get_static_list()

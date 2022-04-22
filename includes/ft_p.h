@@ -264,11 +264,11 @@ int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args);
 void put_req_arg(char *cmd);
 void put_no_req_arg(char *cmd);
 
-int             ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args);
+int ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args);
 t_server_verbs *ftp_wait_for_response(t_cli_ftp *cli_ftp);
 t_server_verbs *ftp_cli_srv_lexer(char *str);
 int             ftp_cli_user_lexer(const char *buff, t_client_verbs *cv);
-void            ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
+void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
 
 struct sockaddr_in ftp_get_socket_address(struct in_addr addr, in_port_t port);
 void               ftp_connect_socket(int sock, struct sockaddr_in *sin);
@@ -276,9 +276,13 @@ int                ftp_create_socket();
 
 int  ftp_create_channel(int sock);
 int  ftp_accept_connection(int sock);
-int  ftp_srv_send_pi(t_srv_transfert *srv_tranfert, t_ftp_code_enum code, char *description);
+int  ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
+					 t_ftp_code_enum  code,
+					 char            *description);
 int  ftp_srv_send_dtp(t_srv_transfert *srv_tranfert, char *data);
-void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert, const char *path, char *const argv[]);
+void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert,
+					  const char      *path,
+					  char *const      argv[]);
 
 // int get_next_line_wrapper(t_srv_transfert *srv_transfert, char *buff);
 int get_next_line_wrapper(int fd, SSL *ssl, t_bool ssl_activate, char **buff);

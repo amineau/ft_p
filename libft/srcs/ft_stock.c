@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-char		*stock_digit(int *nb, char *pourc)
+char *stock_digit(int *nb, char *pourc)
 {
 	int i;
 
@@ -23,9 +23,9 @@ char		*stock_digit(int *nb, char *pourc)
 	return (pourc + i);
 }
 
-char		*stock_flag(t_format *lst, char *str)
+char *stock_flag(t_format *lst, char *str)
 {
-	int		i;
+	int i;
 
 	i = 0;
 	while (ft_strchr("0-+ #", str[i]) && str[i])
@@ -46,7 +46,7 @@ char		*stock_flag(t_format *lst, char *str)
 	return (&str[i]);
 }
 
-char		*stock_width(int *width, int *wild, char *pourc)
+char *stock_width(int *width, int *wild, char *pourc)
 {
 	*wild = 0;
 	if (ft_isdigit(pourc[0]))
@@ -66,10 +66,10 @@ char		*stock_width(int *width, int *wild, char *pourc)
 	return (pourc);
 }
 
-char		*stock_precision(int *prec, char *pourc, int width)
+char *stock_precision(int *prec, char *pourc, int width)
 {
-	if ((pourc[0] == '.' || (width == -1 && ft_isdigit(pourc[0])))
-			&& pourc[1] != '*')
+	if ((pourc[0] == '.' || (width == -1 && ft_isdigit(pourc[0]))) &&
+		pourc[1] != '*')
 		pourc = stock_digit(prec, &pourc[1]);
 	else if (pourc[1] == '*')
 	{
@@ -81,10 +81,10 @@ char		*stock_precision(int *prec, char *pourc, int width)
 	return (pourc);
 }
 
-char		*stock_lenght(char **str, char *pourc)
+char *stock_lenght(char **str, char *pourc)
 {
-	if ((pourc[0] == 'h' && pourc[1] == 'h') || (pourc[0] == 'l' &&
-			pourc[1] == 'l'))
+	if ((pourc[0] == 'h' && pourc[1] == 'h') ||
+		(pourc[0] == 'l' && pourc[1] == 'l'))
 	{
 		*str = ft_strndup(pourc, 2);
 		pourc += 2;

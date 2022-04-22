@@ -13,7 +13,9 @@
 #include "ft_p.h"
 #include "ftp_srv_code_static.h"
 
-int ftp_srv_send_pi(t_srv_transfert *srv_tranfert, t_ftp_code_enum code, char *description)
+int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
+					t_ftp_code_enum  code,
+					char            *description)
 {
 	char *str;
 	int   ret;
@@ -60,7 +62,9 @@ void ftp_srv_pipe_dtp_read(t_srv_transfert *srv_tranfert, int pfd)
 	}
 }
 
-void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert, const char *path, char *const argv[])
+void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert,
+					  const char      *path,
+					  char *const      argv[])
 {
 	int pfd[2];
 	int pid;

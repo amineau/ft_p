@@ -12,10 +12,10 @@
 
 #include "ft_printf.h"
 
-int		ft_float(t_format *lst, va_list ap)
+int ft_float(t_format *lst, va_list ap)
 {
-	char	*str;
-	int		size;
+	char *str;
+	int   size;
 
 	if (lst->precision == 0 && lst->conv != '#')
 		lst->precision = -1;
@@ -29,10 +29,10 @@ int		ft_float(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_scienti(t_format *lst, va_list ap)
+int ft_scienti(t_format *lst, va_list ap)
 {
-	char	*str;
-	int		size;
+	char *str;
+	int   size;
 
 	if (lst->precision == 0 && lst->conv != '#')
 		lst->precision = -1;
@@ -48,11 +48,11 @@ int		ft_scienti(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_octal(t_format *lst, va_list ap)
+int ft_octal(t_format *lst, va_list ap)
 {
-	char	*str;
-	char	*dest;
-	int		size;
+	char *str;
+	char *dest;
+	int   size;
 
 	dest = NULL;
 	ft_lenght_type(lst->type, &(lst->lenght));
@@ -68,11 +68,11 @@ int		ft_octal(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_binaire(t_format *lst, va_list ap)
+int ft_binaire(t_format *lst, va_list ap)
 {
-	char	*str;
-	char	*dest;
-	int		size;
+	char *str;
+	char *dest;
+	int   size;
 
 	dest = NULL;
 	ft_lenght_type(lst->type, &(lst->lenght));
@@ -95,11 +95,11 @@ int		ft_binaire(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_hexa(t_format *lst, va_list ap)
+int ft_hexa(t_format *lst, va_list ap)
 {
-	char	*str;
-	char	*dest;
-	int		size;
+	char *str;
+	char *dest;
+	int   size;
 
 	dest = NULL;
 	str = ft_precision(ft_unsigned_size(lst, 16, ap), lst->precision);

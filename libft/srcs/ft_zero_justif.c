@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-char	*ft_zero_justif(char *str, t_format *lst, char *dest)
+char *ft_zero_justif(char *str, t_format *lst, char *dest)
 {
 	if (lst->just == '0')
 	{

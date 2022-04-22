@@ -12,32 +12,32 @@
 
 #include "ft_printf.h"
 
-int		*ft_onebit(unsigned int w)
+int *ft_onebit(unsigned int w)
 {
-	int	*t;
+	int *t;
 
-	if (!(t = (int*)malloc(sizeof(int))))
+	if (!(t = (int *)malloc(sizeof(int))))
 		return (0);
 	t[0] = w;
 	return (t);
 }
 
-int		*ft_twobit(unsigned int w)
+int *ft_twobit(unsigned int w)
 {
-	int	*t;
+	int *t;
 
-	if (!(t = (int*)malloc(sizeof(int) * 2)))
+	if (!(t = (int *)malloc(sizeof(int) * 2)))
 		return (0);
 	t[0] = 0XC0 + (w >> 6);
 	t[1] = 0X80 + (w % 0X40);
 	return (t);
 }
 
-int		*ft_threebit(unsigned int w)
+int *ft_threebit(unsigned int w)
 {
-	int	*t;
+	int *t;
 
-	if (!(t = (int*)malloc(sizeof(int) * 3)))
+	if (!(t = (int *)malloc(sizeof(int) * 3)))
 		return (0);
 	t[0] = 0XE0 + (w >> 12);
 	t[1] = 0X80 + ((w >> 6) % 0X40);
@@ -45,11 +45,11 @@ int		*ft_threebit(unsigned int w)
 	return (t);
 }
 
-int		*ft_fourbit(unsigned int w)
+int *ft_fourbit(unsigned int w)
 {
-	int	*t;
+	int *t;
 
-	if (!(t = (int*)malloc(sizeof(int) * 4)))
+	if (!(t = (int *)malloc(sizeof(int) * 4)))
 		return (0);
 	t[0] = 0XF0 + (w >> 18);
 	t[1] = 0X80 + ((w >> 12) % 0X40);
@@ -58,10 +58,10 @@ int		*ft_fourbit(unsigned int w)
 	return (t);
 }
 
-void	ft_putwint_fd(int fd, unsigned int w, int oc)
+void ft_putwint_fd(int fd, unsigned int w, int oc)
 {
-	int	*t;
-	int	i;
+	int *t;
+	int  i;
 
 	if (oc == 1)
 		t = ft_onebit(w);
@@ -72,9 +72,9 @@ void	ft_putwint_fd(int fd, unsigned int w, int oc)
 	else if (oc == 4)
 		t = ft_fourbit(w);
 	else
-		return ;
+		return;
 	i = 0;
 	while (i < oc)
 		write(fd, &t[i++], 1);
-	ft_memdel((void**)&t);
+	ft_memdel((void **)&t);
 }

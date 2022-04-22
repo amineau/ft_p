@@ -18,10 +18,8 @@ int ft_strncasecmp(const char *s1, const char *s2, size_t n)
 
 	i = 0;
 	while (((ft_islower(s1[i]) && s1[i] == s2[i] + 32) ||
-			(ft_isupper(s1[i]) && s1[i] == s2[i] - 32) ||
-			(s1[i] == s2[i])) &&
-		   (s1[i] || s2[i]) &&
-		   i + 1 < n)
+			(ft_isupper(s1[i]) && s1[i] == s2[i] - 32) || (s1[i] == s2[i])) &&
+		   (s1[i] || s2[i]) && i + 1 < n)
 		i++;
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }

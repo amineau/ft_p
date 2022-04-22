@@ -29,11 +29,10 @@ int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args)
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state != POS_TMP)
 		exit(EXIT_FAILURE_RETRY);
-	while ((ret = get_next_line_wrapper(
-				cli_ftp->dtp.sock,
-				cli_ftp->dtp.ssl,
-				cli_ftp->dtp.ssl_activated,
-				&buff)) > 0)
+	while ((ret = get_next_line_wrapper(cli_ftp->dtp.sock,
+										cli_ftp->dtp.ssl,
+										cli_ftp->dtp.ssl_activated,
+										&buff)) > 0)
 		printf("%s\n", buff);
 	if (cli_ftp->dtp.ssl_activated)
 		shutdown_ssl(cli_ftp->dtp.ssl);

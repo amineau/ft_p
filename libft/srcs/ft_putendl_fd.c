@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-void	ft_putendl_fd(int fd, char const *s)
+void ft_putendl_fd(int fd, char const *s)
 {
 	ft_putstr_fd(fd, s);
 	ft_putchar_fd(fd, '\n');

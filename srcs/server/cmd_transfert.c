@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/20 13:40:15 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 22:02:21 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,9 @@ char *porttostr(in_port_t sin_port)
 	char  *str;
 
 	port = (char *[]){
-		ft_itoa((sin_port & 0x00FF)),
-		ft_itoa((sin_port & 0xFF00) >> 8),
-		NULL};
+		ft_itoa((sin_port & 0x00FF)), ft_itoa((sin_port & 0xFF00) >> 8), NULL};
 
 	str = ft_arraycjoin(port, ',');
-	// ft_arrayfree(port);
 	return str;
 }
 
@@ -88,10 +85,10 @@ t_server_verbs cmd_passive_mode(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	port = porttostr(sin.sin_port);
 	sv.sr_code = _227;
 	sv.sr_state = POS_INT;
-	sv.user_info = ft_arrayjoin((char *[]){
-		"Entering Passive Mode. ",
-		ft_arraycjoin((char *[]){addr, port, NULL}, ','),
-		NULL});
+	sv.user_info =
+		ft_arrayjoin((char *[]){"Entering Passive Mode. ",
+								ft_arraycjoin((char *[]){addr, port, NULL}, ','),
+								NULL});
 	free(port);
 	free(addr);
 	return (sv);

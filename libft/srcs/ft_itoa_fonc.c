@@ -12,10 +12,10 @@
 
 #include "ft_printf.h"
 
-char		*ft_decimal(long double nb, int prec)
+char *ft_decimal(long double nb, int prec)
 {
-	char	*str;
-	int		i;
+	char *str;
+	int   i;
 
 	if (prec < 0)
 		return (NULL);
@@ -37,9 +37,9 @@ char		*ft_decimal(long double nb, int prec)
 	return (str);
 }
 
-char		*ft_integer(long double nb, char *str, int nbrdig, int prec)
+char *ft_integer(long double nb, char *str, int nbrdig, int prec)
 {
-	int	i;
+	int i;
 
 	str = ft_strnew(nbrdig);
 	i = 0;
@@ -56,9 +56,9 @@ char		*ft_integer(long double nb, char *str, int nbrdig, int prec)
 	return (str);
 }
 
-void		ft_refresh(char **str)
+void ft_refresh(char **str)
 {
-	int	i;
+	int i;
 
 	i = (int)ft_strlen(*str) - 1;
 	while (i >= 0 && (*str)[i] != '-')
@@ -85,9 +85,9 @@ void		ft_refresh(char **str)
 	}
 }
 
-char		*ft_exposant(char e, int dec)
+char *ft_exposant(char e, int dec)
 {
-	char	*str;
+	char *str;
 
 	str = ft_strnew(2);
 	str[0] = e;

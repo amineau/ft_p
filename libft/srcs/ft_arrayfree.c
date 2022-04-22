@@ -12,9 +12,8 @@
 
 #include "libft.h"
 
-
-void ft_arrayfree(const char** array)
+void ft_arrayfree(const char **array)
 {
-    while(array)
-        free(array++);
+	while (array)
+		free(array++);
 }

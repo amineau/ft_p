@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-char	*ft_charupper(char *str, char c)
+char *ft_charupper(char *str, char c)
 {
 	int i;
 
@@ -29,23 +29,23 @@ char	*ft_charupper(char *str, char c)
 	return (str);
 }
 
-char	*ft_nan_or_inf(double nb, char c)
+char *ft_nan_or_inf(double nb, char c)
 {
-	double			tmp;
-	unsigned int	bit;
+	double       tmp;
+	unsigned int bit;
 
-	if ((*(uintmax_t*)&nb >> 52) % 0x800 == 0x7FF)
+	if ((*(uintmax_t *)&nb >> 52) % 0x800 == 0x7FF)
 	{
 		tmp = nb;
 		bit = 0;
-		while ((*(uintmax_t*)&tmp & 1) == 0)
+		while ((*(uintmax_t *)&tmp & 1) == 0)
 		{
-			*(uintmax_t*)&tmp = *(uintmax_t*)&tmp >> 1;
+			*(uintmax_t *)&tmp = *(uintmax_t *)&tmp >> 1;
 			bit++;
 		}
 		if (bit == 52)
 		{
-			if (*(uintmax_t*)&nb >> 63 == 1)
+			if (*(uintmax_t *)&nb >> 63 == 1)
 				return (ft_charupper("-inf", c));
 			else
 				return (ft_charupper("inf", c));
@@ -56,9 +56,9 @@ char	*ft_nan_or_inf(double nb, char c)
 	return (NULL);
 }
 
-double	ft_recup(double dif, double nb, int i)
+double ft_recup(double dif, double nb, int i)
 {
-	int	j;
+	int j;
 
 	j = 0;
 	while (j++ < i)
@@ -66,9 +66,9 @@ double	ft_recup(double dif, double nb, int i)
 	return (ABS(nb - dif));
 }
 
-int		ft_nbrint(double *nb)
+int ft_nbrint(double *nb)
 {
-	int	nbrdig;
+	int nbrdig;
 
 	nbrdig = 1;
 	while (*nb > 10)
@@ -79,16 +79,16 @@ int		ft_nbrint(double *nb)
 	return (nbrdig);
 }
 
-char	*ft_itoa_double(double nb, int prec, char c)
+char *ft_itoa_double(double nb, int prec, char c)
 {
-	char	*str;
-	double	tmp;
-	int		i;
+	char  *str;
+	double tmp;
+	int    i;
 
 	if ((str = ft_nan_or_inf(nb, c)))
 		return (str);
-	tmp = (*(uintmax_t*)&nb >> 63 == 1) ? -nb : nb;
-	str = (*(uintmax_t*)&nb >> 63 == 1) ? ft_strdup("-") : ft_strdup("");
+	tmp = (*(uintmax_t *)&nb >> 63 == 1) ? -nb : nb;
+	str = (*(uintmax_t *)&nb >> 63 == 1) ? ft_strdup("-") : ft_strdup("");
 	i = ft_nbrint(&tmp);
 	while (i > 8)
 	{

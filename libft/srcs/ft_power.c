@@ -12,10 +12,10 @@
 
 #include "libft.h"
 
-uintmax_t	ft_power(int nbr, int base)
+uintmax_t ft_power(int nbr, int base)
 {
-	int			i;
-	uintmax_t	res;
+	int       i;
+	uintmax_t res;
 
 	i = 0;
 	res = 1;

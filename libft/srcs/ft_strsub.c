@@ -12,12 +12,12 @@
 
 #include "libft.h"
 
-char	*ft_strsub(char const *s, unsigned int start, size_t len)
+char *ft_strsub(char const *s, unsigned int start, size_t len)
 {
-	char	*dst;
-	size_t	i;
+	char  *dst;
+	size_t i;
 
-	if (!s || !(dst = (char*)malloc(sizeof(char) * (len + 1))))
+	if (!s || !(dst = (char *)malloc(sizeof(char) * (len + 1))))
 		return (NULL);
 	i = 0;
 	while (i < len)

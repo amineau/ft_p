@@ -12,12 +12,12 @@
 
 #include "ft_printf.h"
 
-int		ft_wint(t_format *lst, va_list ap)
+int ft_wint(t_format *lst, va_list ap)
 {
-	wint_t	w;
-	int		size;
-	int		blanc;
-	char	*str;
+	wint_t w;
+	int    size;
+	int    blanc;
+	char  *str;
 
 	w = va_arg(ap, wint_t);
 	if ((size = ft_cntwint(w)) == -1)
@@ -37,12 +37,12 @@ int		ft_wint(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_wchar(t_format *lst, va_list ap)
+int ft_wchar(t_format *lst, va_list ap)
 {
-	wchar_t	*w;
-	int		size;
+	wchar_t *w;
+	int      size;
 
-	if (!(w = va_arg(ap, wchar_t*)))
+	if (!(w = va_arg(ap, wchar_t *)))
 		size = ft_string(lst, NULL);
 	else
 		size = ft_putwchar(w, lst);

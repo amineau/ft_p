@@ -12,9 +12,9 @@
 
 #include "ft_printf.h"
 
-unsigned int	ft_wcharlen(wchar_t *w)
+unsigned int ft_wcharlen(wchar_t *w)
 {
-	unsigned int	i;
+	unsigned int i;
 
 	i = 0;
 	while (w[i])
@@ -22,12 +22,12 @@ unsigned int	ft_wcharlen(wchar_t *w)
 	return (i);
 }
 
-wchar_t			*ft_wcharndup(wchar_t *s1, size_t n)
+wchar_t *ft_wcharndup(wchar_t *s1, size_t n)
 {
-	wchar_t	*s2;
-	size_t	i;
+	wchar_t *s2;
+	size_t   i;
 
-	if (!(s2 = (wchar_t*)malloc(sizeof(wchar_t) * (ft_wcharlen(s1) + 1))))
+	if (!(s2 = (wchar_t *)malloc(sizeof(wchar_t) * (ft_wcharlen(s1) + 1))))
 		return (NULL);
 	i = 0;
 	while (s1[i] && i < n)

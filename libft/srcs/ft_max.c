@@ -12,10 +12,10 @@
 
 #include "libft.h"
 
-int	ft_max(int *tab, size_t len)
+int ft_max(int *tab, size_t len)
 {
-	size_t	i;
-	int		max;
+	size_t i;
+	int    max;
 
 	i = 1;
 	if (len == 0)

@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-static int	nbrdigit(uintmax_t nbr, int base)
+static int nbrdigit(uintmax_t nbr, int base)
 {
 	int pow;
 
@@ -25,16 +25,16 @@ static int	nbrdigit(uintmax_t nbr, int base)
 	return (pow + 1);
 }
 
-char		*ft_utoa_base(uintmax_t value, int base, char c)
+char *ft_utoa_base(uintmax_t value, int base, char c)
 {
-	char	*str;
-	int		pow;
-	int		i;
-	int		digit;
+	char *str;
+	int   pow;
+	int   i;
+	int   digit;
 
 	i = 0;
 	pow = nbrdigit(value, base);
-	str = (char*)malloc(sizeof(char) * (pow + 1));
+	str = (char *)malloc(sizeof(char) * (pow + 1));
 	while (--pow >= 0)
 	{
 		digit = value / ft_power(pow, base);

@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-int	ft_cntwint(unsigned int w)
+int ft_cntwint(unsigned int w)
 {
 	if (w < 0x80)
 		return (1);

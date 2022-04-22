@@ -177,7 +177,9 @@ t_server_verbs cmd_list(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	args = NULL;
 	if (!ft_strcmp("-a", cv->cv_arg))
 		args = "-a";
-	ftp_srv_pipe_dtp(&srv_ftp->dtp, "/bin/ls", (char *const[]){"ls", "-nl", args, (char *)NULL});
+	ftp_srv_pipe_dtp(&srv_ftp->dtp,
+					 "/bin/ls",
+					 (char *const[]){"ls", "-nl", args, (char *)NULL});
 
 	sv.sr_code = _226;
 	sv.sr_state = POS_DEF;

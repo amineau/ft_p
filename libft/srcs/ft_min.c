@@ -12,10 +12,10 @@
 
 #include "libft.h"
 
-int	ft_min(int *tab, size_t len)
+int ft_min(int *tab, size_t len)
 {
-	size_t	i;
-	int		min;
+	size_t i;
+	int    min;
 
 	i = 1;
 	if (len == 0)

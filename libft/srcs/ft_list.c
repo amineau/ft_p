@@ -12,24 +12,24 @@
 
 #include "ft_printf.h"
 
-void		ft_close_lst(t_format **lst, va_list ap)
+void ft_close_lst(t_format **lst, va_list ap)
 {
 	free(lst);
 	va_end(ap);
 }
 
-void		ft_lstdel_format(t_format *lst)
+void ft_lstdel_format(t_format *lst)
 {
 	if (lst->lenght)
 		ft_strdel(&lst->lenght);
 	free(lst);
 }
 
-int			size_format(char *str)
+int size_format(char *str)
 {
-	int		i;
-	int		j;
-	char	*type;
+	int   i;
+	int   j;
+	char *type;
 
 	type = TYPE;
 	i = 0;
@@ -45,13 +45,13 @@ int			size_format(char *str)
 	return (0);
 }
 
-t_format	*ft_listnew_format(int fd, char *pourc)
+t_format *ft_listnew_format(int fd, char *pourc)
 {
-	t_format	*list;
-	char		*tmp;
+	t_format *list;
+	char     *tmp;
 
 	tmp = pourc;
-	list = (t_format*)ft_memalloc(sizeof(t_format));
+	list = (t_format *)ft_memalloc(sizeof(t_format));
 	pourc = stock_flag(list, pourc);
 	pourc = stock_width(&list->width, &list->wild_width, pourc);
 	pourc = stock_precision(&list->precision, pourc, list->width);
@@ -67,15 +67,16 @@ t_format	*ft_listnew_format(int fd, char *pourc)
 		list->precision = 6;
 	else if (list->precision == -2 && ft_strchr("dDioOuUxXbB", list->type))
 		list->precision = 1;
-	else if (ft_strchr("dDioOuUxXbB", list->type) && list->precision <
-			list->width && list->just == '0' && list->precision >= 0)
+	else if (ft_strchr("dDioOuUxXbB", list->type) &&
+			 list->precision < list->width && list->just == '0' &&
+			 list->precision >= 0)
 		list->just = ' ';
 	return (list);
 }
 
-int			ft_listadd_format(t_format *list, t_format **begin)
+int ft_listadd_format(t_format *list, t_format **begin)
 {
-	t_format	*tmp;
+	t_format *tmp;
 
 	if (!list)
 		return (0);

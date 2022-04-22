@@ -12,12 +12,12 @@
 
 #include "ft_printf.h"
 
-int		ft_form2(t_format *tmp, va_list ap)
+int ft_form2(t_format *tmp, va_list ap)
 {
 	if (tmp->type == 's')
 		return (ft_string(tmp, ap));
-	else if (tmp->type == 'C' || (tmp->type == 'c' &&
-				ft_strcmp(tmp->lenght, "l") == 0))
+	else if (tmp->type == 'C' ||
+			 (tmp->type == 'c' && ft_strcmp(tmp->lenght, "l") == 0))
 		return (ft_wint(tmp, ap));
 	else if (tmp->type == 'c')
 		return (ft_char(tmp, ap));
@@ -41,18 +41,18 @@ int		ft_form2(t_format *tmp, va_list ap)
 		return (ft_char(tmp, ap));
 }
 
-int		ft_form(t_format **lst, char **format, va_list ap)
+int ft_form(t_format **lst, char **format, va_list ap)
 {
-	int			size;
-	t_format	*tmp;
+	int       size;
+	t_format *tmp;
 
 	tmp = *lst;
 	size = 0;
 	if (tmp->size != 1)
 	{
 		ft_wildcard(*lst, ap);
-		if (tmp->type == 'S' || (tmp->type == 's' &&
-					ft_strcmp(tmp->lenght, "l") == 0))
+		if (tmp->type == 'S' ||
+			(tmp->type == 's' && ft_strcmp(tmp->lenght, "l") == 0))
 			size = ft_wchar(tmp, ap);
 		else
 			size = ft_form2(tmp, ap);
@@ -63,10 +63,10 @@ int		ft_form(t_format **lst, char **format, va_list ap)
 	return (size);
 }
 
-int		ft_algo(int fd, t_format *list, char *format, va_list ap)
+int ft_algo(int fd, t_format *list, char *format, va_list ap)
 {
-	int	size;
-	int	res;
+	int size;
+	int res;
 
 	size = 0;
 	while (*format)

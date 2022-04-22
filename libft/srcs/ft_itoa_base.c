@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-static int	nbrdigit(uintmax_t nbr, int base)
+static int nbrdigit(uintmax_t nbr, int base)
 {
 	int pow;
 
@@ -25,27 +25,27 @@ static int	nbrdigit(uintmax_t nbr, int base)
 	return (pow + 1);
 }
 
-static char	*asneg(intmax_t nb, int *i, int base)
+static char *asneg(intmax_t nb, int *i, int base)
 {
-	int			neg;
-	char		*str;
-	uintmax_t	tmp;
+	int       neg;
+	char     *str;
+	uintmax_t tmp;
 
 	neg = (nb < 0) ? 1 : 0;
 	tmp = (nb < 0) ? -nb : nb;
-	str = (char*)malloc(sizeof(char) * (neg + nbrdigit(tmp, base) + 1));
+	str = (char *)malloc(sizeof(char) * (neg + nbrdigit(tmp, base) + 1));
 	if (neg == 1)
 		str[(*i)++] = '-';
 	return (str);
 }
 
-char		*ft_itoa_base(intmax_t value, int base, char c)
+char *ft_itoa_base(intmax_t value, int base, char c)
 {
-	char		*str;
-	int			pow;
-	int			i;
-	int			digit;
-	uintmax_t	tmp;
+	char     *str;
+	int       pow;
+	int       i;
+	int       digit;
+	uintmax_t tmp;
 
 	i = 0;
 	tmp = (value < 0) ? -value : value;

@@ -12,14 +12,14 @@
 
 #include "libft.h"
 
-int		ft_vprintf_fd(int fd, const char *format, va_list ap)
+int ft_vprintf_fd(int fd, const char *format, va_list ap)
 {
-	int			size;
-	char		*pourc;
-	t_format	**lst;
+	int        size;
+	char      *pourc;
+	t_format **lst;
 
-	lst = (t_format**)ft_memalloc(sizeof(t_format*));
-	pourc = (char*)format;
+	lst = (t_format **)ft_memalloc(sizeof(t_format *));
+	pourc = (char *)format;
 	while (pourc)
 	{
 		if ((pourc = ft_strchr(pourc, '%')))
@@ -34,22 +34,22 @@ int		ft_vprintf_fd(int fd, const char *format, va_list ap)
 				pourc++;
 		}
 	}
-	size = ft_algo(fd, *lst, (char*)format, ap);
+	size = ft_algo(fd, *lst, (char *)format, ap);
 	ft_close_lst(lst, ap);
 	return (size);
 }
 
-int		ft_printf_fd(int fd, const char *format, ...)
+int ft_printf_fd(int fd, const char *format, ...)
 {
-	va_list		ap;
+	va_list ap;
 
 	va_start(ap, format);
 	return (ft_vprintf_fd(fd, format, ap));
 }
 
-int		ft_printf(const char *format, ...)
+int ft_printf(const char *format, ...)
 {
-	va_list		ap;
+	va_list ap;
 
 	va_start(ap, format);
 	return (ft_vprintf_fd(STDOUT_FILENO, format, ap));

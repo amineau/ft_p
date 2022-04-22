@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-int		nbrdigit(uintmax_t nb)
+int nbrdigit(uintmax_t nb)
 {
 	int pow;
 

@@ -126,7 +126,9 @@ void      ft_lstadd(t_list **alst, t_list *new);
 void      ft_lstaddend(t_list **alst, t_list *new);
 void      ft_lstiter(t_list *lst, void (*f)(t_list *elem));
 t_list   *ft_lstmap(t_list *lst, t_list *(*f)(t_list *elem));
-t_list   *ft_lstfindfirst(t_list *lst, void const *content, int (*f)(t_list *, void const *));
+t_list   *ft_lstfindfirst(t_list     *lst,
+						  void const *content,
+						  int (*f)(t_list *, void const *));
 void      ft_lstremoveelem(t_list **alst, t_list *elem);
 int       get_next_line(int fd, char **line);
 int       get_next_line_eol(int fd, char **line, const char *eol);

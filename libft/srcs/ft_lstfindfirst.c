@@ -12,7 +12,9 @@
 
 #include "libft.h"
 
-t_list *ft_lstfindfirst(t_list *lst, void const *content, int (*f)(t_list *, void const *))
+t_list *ft_lstfindfirst(t_list     *lst,
+						void const *content,
+						int (*f)(t_list *, void const *))
 {
 	if (!lst || !f)
 		return (NULL);

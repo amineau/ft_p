@@ -15,14 +15,13 @@
 
 #include "ft_p.h"
 
-static const char *g_user_cmd_str[] = {
-	"ls",
-	"cd",
-	// "get",
-	// "put",
-	"pwd",
-	"quit",
-	"help",
-	NULL};
+static const char *g_user_cmd_str[] = {"ls",
+									   "cd",
+									   // "get",
+									   // "put",
+									   "pwd",
+									   "quit",
+									   "help",
+									   NULL};
 
 #endif

@@ -24,14 +24,18 @@ void *ft_calloc(size_t n, size_t size)
 	return ft_memset(p, 0, total);
 }
 
-static int pamconv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
+static int pamconv(int                        num_msg,
+				   const struct pam_message **msg,
+				   struct pam_response      **resp,
+				   void                      *appdata_ptr)
 {
 	int   i;
 	char *pass;
 
 	pass = (char *)malloc(ft_strlen(appdata_ptr) + 1);
 	ft_strcpy(pass, appdata_ptr);
-	*resp = (struct pam_response *)ft_calloc(num_msg, sizeof(struct pam_response));
+	*resp =
+		(struct pam_response *)ft_calloc(num_msg, sizeof(struct pam_response));
 	i = 0;
 	while (i < num_msg)
 	{
@@ -45,9 +49,7 @@ static int pamconv(int num_msg, const struct pam_message **msg, struct pam_respo
 t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
 	t_server_verbs        sv;
-	const struct pam_conv conv = {
-		&pamconv,
-		NULL};
+	const struct pam_conv conv = {&pamconv, NULL};
 
 	(void)srv_ftp;
 	if (!ft_strcmp(cv->cv_arg, ANONYMOUS_USER))
@@ -75,14 +77,12 @@ t_server_verbs cmd_password(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
 	t_server_verbs        sv;
 	int                   pam_status;
-	const struct pam_conv conv = {
-		&pamconv,
-		(void *)cv->cv_arg};
+	const struct pam_conv conv = {&pamconv, (void *)cv->cv_arg};
 
 	(void)srv_ftp;
 	pam_set_item(cv->cv_pamh, PAM_CONV, (void *)&conv);
-	pam_status = pam_authenticate(cv->cv_pamh,
-								  PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	pam_status =
+		pam_authenticate(cv->cv_pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
 	if (pam_status == PAM_SUCCESS)
 	{
 		sv.sr_code = _230;

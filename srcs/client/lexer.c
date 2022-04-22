@@ -46,7 +46,8 @@ int ftp_cli_user_lexer(const char *buff, t_client_verbs *cv)
 		return (-1);
 	else if ((code_command = ft_arraystr(g_user_cmd_str, split[0])) == -1)
 	{
-		printf("Unkwown command : [%s]\nType help for more information\n", split[0]);
+		printf("Unkwown command : [%s]\nType help for more information\n",
+			   split[0]);
 		return (-1);
 	}
 	cv->cv_verb = split[0];

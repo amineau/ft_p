@@ -12,9 +12,9 @@
 
 #include "ft_p.h"
 
-t_server_verbs	cmd_not_implemented(char* verb, t_srv_ftp* srv_ftp)
+t_server_verbs cmd_not_implemented(char *verb, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs	sv;
+	t_server_verbs sv;
 
 	(void)srv_ftp;
 	sv.sr_code = _503;

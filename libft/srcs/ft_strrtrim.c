@@ -12,18 +12,19 @@
 
 #include "libft.h"
 
-char	*ft_strrtrim(char const *s)
+char *ft_strrtrim(char const *s)
 {
-	size_t	start;
-	size_t	end;
-	size_t	i;
+	size_t start;
+	size_t end;
+	size_t i;
 
 	if (!s)
 		return (NULL);
 	start = 0;
 	end = ft_strlen(s) - 1;
-	while (s[start] && (s[start] == ' ' ||
-				s[start] == '\t' || s[start] == '\n' || s[start] == '\r'))
+	while (s[start] &&
+		   (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' ||
+			s[start] == '\r'))
 		start++;
 	i = start;
 	end = 0;

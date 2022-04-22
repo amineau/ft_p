@@ -67,7 +67,8 @@ int *get_numbers(const char *str)
 
 in_addr_t itoaddr(int *numbers)
 {
-	return (in_addr_t)((numbers[3] << 24) | (numbers[2] << 16) | (numbers[1] << 8) | numbers[0]);
+	return (in_addr_t)((numbers[3] << 24) | (numbers[2] << 16) |
+					   (numbers[1] << 8) | numbers[0]);
 }
 
 in_port_t itoaport(int *numbers)
@@ -87,8 +88,7 @@ int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 		numbers = get_numbers(get_last_word(srv_verbs->user_info));
 		if (numbers[0] == 6)
 			cli_ftp->dtp.sin = ftp_get_socket_address(
-				stoaddr(itoaddr(&(numbers[1]))),
-				htons(itoaport(&(numbers[5]))));
+				stoaddr(itoaddr(&(numbers[1]))), htons(itoaport(&(numbers[5]))));
 		else
 			error_print_exit(EXIT_FAILURE, "Unable to parse response server");
 	}

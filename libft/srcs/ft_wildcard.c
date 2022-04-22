@@ -12,7 +12,7 @@
 
 #include "ft_printf.h"
 
-void	ft_wildcard(t_format *lst, va_list ap)
+void ft_wildcard(t_format *lst, va_list ap)
 {
 	if (lst->width == -1)
 	{

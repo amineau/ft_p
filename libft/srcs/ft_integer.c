@@ -12,11 +12,11 @@
 
 #include "ft_printf.h"
 
-int		ft_char(t_format *lst, va_list ap)
+int ft_char(t_format *lst, va_list ap)
 {
-	int		size;
-	char	c;
-	char	*str;
+	int   size;
+	char  c;
+	char *str;
 
 	if (lst->type != 'c')
 		c = lst->type;
@@ -38,12 +38,12 @@ int		ft_char(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_string(t_format *lst, va_list ap)
+int ft_string(t_format *lst, va_list ap)
 {
-	char	*str;
-	int		size;
+	char *str;
+	int   size;
 
-	if (!ap || !(str = va_arg(ap, char*)))
+	if (!ap || !(str = va_arg(ap, char *)))
 		str = "(null)";
 	size = (lst->precision >= 0) ? lst->precision : (int)ft_strlen(str);
 	str = ft_justif_string(ft_strndup(str, size), lst->width, lst->just);
@@ -53,10 +53,10 @@ int		ft_string(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_int(t_format *lst, va_list ap)
+int ft_int(t_format *lst, va_list ap)
 {
-	char	*str;
-	int		size;
+	char *str;
+	int   size;
 
 	ft_lenght_type(lst->type, &(lst->lenght));
 	str = ft_precision(ft_signed_size(lst, 10, ap), lst->precision);
@@ -68,10 +68,10 @@ int		ft_int(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_unint(t_format *lst, va_list ap)
+int ft_unint(t_format *lst, va_list ap)
 {
-	char	*str;
-	int		size;
+	char *str;
+	int   size;
 
 	ft_lenght_type(lst->type, &(lst->lenght));
 	str = ft_precision(ft_unsigned_size(lst, 10, ap), lst->precision);
@@ -82,15 +82,15 @@ int		ft_unint(t_format *lst, va_list ap)
 	return (size);
 }
 
-int		ft_adrpoint(t_format *lst, va_list ap)
+int ft_adrpoint(t_format *lst, va_list ap)
 {
-	char	*str;
-	char	*dest;
-	int		size;
+	char *str;
+	char *dest;
+	int   size;
 
 	dest = ft_straddc(ft_strdup("0"), lst->type + 8);
 	str = ft_precision(ft_utoa_base(va_arg(ap, uintmax_t), 16, lst->type + 8),
-			lst->precision);
+					   lst->precision);
 	str = ft_zero_justif(str, lst, dest);
 	ft_putstr_fd(lst->fd, str);
 	size = ft_strlen(str);

@@ -12,9 +12,9 @@
 
 #include "libft.h"
 
-int	ft_arraystr(const char **array, const char* str)
+int ft_arraystr(const char **array, const char *str)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	while (array[i])

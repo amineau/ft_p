@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-intmax_t	ft_abs(intmax_t n)
+intmax_t ft_abs(intmax_t n)
 {
 	if (n < 0)
 		n = -n;

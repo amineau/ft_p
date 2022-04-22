@@ -12,11 +12,11 @@
 
 #include "ft_printf.h"
 
-long double	ft_atof(char *str)
+long double ft_atof(char *str)
 {
-	long double	nb;
-	int			size;
-	int			i;
+	long double nb;
+	int         size;
+	int         i;
 
 	size = ft_strlen(str);
 	i = (str[0] == '-') ? 1 : 0;

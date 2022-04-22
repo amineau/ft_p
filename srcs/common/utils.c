@@ -62,7 +62,8 @@ struct in_addr htoaddr(char *name)
 		else if (h_errno == NO_RECOVERY)
 			err = "Server error";
 		else if (h_errno == TRY_AGAIN)
-			err = "A temporary error occurred on an authoritative name server.  Try again later.";
+			err = "A temporary error occurred on an authoritative name server. "
+				  " Try again later.";
 		else
 			err = "Host by name has failed";
 		error_print_exit(EXIT_FAILURE, err);

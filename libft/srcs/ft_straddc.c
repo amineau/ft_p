@@ -12,13 +12,13 @@
 
 #include "ft_printf.h"
 
-char	*ft_straddc(const char *str, char c)
+char *ft_straddc(const char *str, char c)
 {
-	char	*dest;
-	int		i;
+	char *dest;
+	int   i;
 
 	i = ft_strlen(str);
-	if (!(dest = (char*)ft_memalloc(sizeof(char*) * (i + 1))))
+	if (!(dest = (char *)ft_memalloc(sizeof(char *) * (i + 1))))
 		return (NULL);
 	dest = ft_strcpy(dest, str);
 	dest[i] = (char)c;

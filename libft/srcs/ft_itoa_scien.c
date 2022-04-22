@@ -12,14 +12,14 @@
 
 #include "ft_printf.h"
 
-size_t	ft_test_zero(double nb)
+size_t ft_test_zero(double nb)
 {
-	size_t	bit;
+	size_t bit;
 
 	bit = 0;
-	while ((*(uintmax_t*)&nb & 1) == 0 && bit != 63)
+	while ((*(uintmax_t *)&nb & 1) == 0 && bit != 63)
 	{
-		*(uintmax_t*)&nb = *(uintmax_t*)&nb >> 1;
+		*(uintmax_t *)&nb = *(uintmax_t *)&nb >> 1;
 		bit++;
 	}
 	if (bit == 63)
@@ -27,17 +27,17 @@ size_t	ft_test_zero(double nb)
 	return (0);
 }
 
-char	*ft_itoa_scien(double nb, int prec, char e)
+char *ft_itoa_scien(double nb, int prec, char e)
 {
-	char	*str;
-	double	tmp;
-	int		dec;
+	char  *str;
+	double tmp;
+	int    dec;
 
 	if ((str = ft_nan_or_inf(nb, e)))
 		return (str);
 	dec = 0;
-	tmp = (*(uintmax_t*)&nb >> 63 == 1) ? -nb : nb;
-	str = (*(uintmax_t*)&nb >> 63 == 1) ? ft_strdup("-") : ft_strdup("");
+	tmp = (*(uintmax_t *)&nb >> 63 == 1) ? -nb : nb;
+	str = (*(uintmax_t *)&nb >> 63 == 1) ? ft_strdup("-") : ft_strdup("");
 	if (!ft_test_zero(nb))
 	{
 		while (tmp < 1 && dec-- <= 0)
