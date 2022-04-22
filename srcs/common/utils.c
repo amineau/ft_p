@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/17 16:48:18 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 12:55:52 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:39:55 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,20 +50,31 @@ struct in_addr htoaddr(char *name)
 {
 	struct hostent *host;
 	struct in_addr  addr;
+	char           *err;
 
 	host = gethostbyname(name);
 	if (!host)
 	{
 		if (h_errno == HOST_NOT_FOUND)
-			printf("%s is unknown\n", name);
+			err = "Host is unknown";
 		else if (h_errno == NO_DATA)
-			printf("%s does not have an IP address\n", name);
+			err = "Host does not have an IP address";
 		else if (h_errno == NO_RECOVERY)
-			printf("Server error\n");
+			err = "Server error";
 		else if (h_errno == TRY_AGAIN)
-			printf("A temporary error occurred on an authoritative name server.  Try again later.\n");
-		exit(EXIT_FAILURE);
+			err = "A temporary error occurred on an authoritative name server.  Try again later.";
+		else
+			err = "Host by name has failed";
+		error_print_exit(EXIT_FAILURE, err);
 	}
 	ft_memcpy(&addr.s_addr, host->h_addr, host->h_length);
+	return (addr);
+}
+
+struct in_addr stoaddr(in_addr_t s_addr)
+{
+	struct in_addr addr;
+
+	addr.s_addr = s_addr;
 	return (addr);
 }

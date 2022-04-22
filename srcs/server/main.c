@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:49:09 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:55:38 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,9 @@ int ftp_accept_connection(int sock)
 		else if (errno == ECONNABORTED)
 			printf("The connection has been aborted\n");
 		else
-			printf("Accept failed\n\terrno : %d\n\terror : %s\n", errno, strerror(errno));
+			printf("Accept failed\n\terrno : %d\n\terror : %s\n",
+				   errno,
+				   strerror(errno));
 	}
 	return (cs);
 }
@@ -100,7 +102,8 @@ t_server_verbs ftp_lexer(const char *buff, t_client_verbs *cv)
 		else
 			printf("\033[0;34mUSER-PI: %s\033[0m\n", buff);
 	}
-	if (!cv->cv_verb || (code_command = ft_arraystr(g_ftp_cmd_str, cv->cv_verb)) == -1)
+	if (!cv->cv_verb ||
+		(code_command = ft_arraystr(g_ftp_cmd_str, cv->cv_verb)) == -1)
 	{
 		sv.sr_code = _500;
 		sv.sr_state = NEG_DEF;
@@ -118,8 +121,18 @@ t_server_verbs ftp_lexer(const char *buff, t_client_verbs *cv)
 // TODO : Merge with user_parser (client.c)
 t_server_verbs ftp_parser(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
-	t_server_action command[] = {
-		cmd_username, cmd_password, cmd_account, cmd_auth_method, cmd_change_workdir, cmd_change_to_parent_dir, cmd_logout, cmd_port, cmd_passive_mode, cmd_representation_type, cmd_retrieve, cmd_store, cmd_rename_from, cmd_rename_to, cmd_abort, cmd_delete, cmd_remove_dir, cmd_make_dir, cmd_print_workdir, cmd_list, cmd_system, cmd_protection_buffer_size, cmd_protection, cmd_noop};
+	t_server_action command[] = {cmd_username,       cmd_password,
+								 cmd_account,        cmd_auth_method,
+								 cmd_change_workdir, cmd_change_to_parent_dir,
+								 cmd_logout,         cmd_port,
+								 cmd_passive_mode,   cmd_representation_type,
+								 cmd_retrieve,       cmd_store,
+								 cmd_rename_from,    cmd_rename_to,
+								 cmd_abort,          cmd_delete,
+								 cmd_remove_dir,     cmd_make_dir,
+								 cmd_print_workdir,  cmd_list,
+								 cmd_system,         cmd_protection_buffer_size,
+								 cmd_protection,     cmd_noop};
 	return (command[cv->cv_code](cv, srv_ftp));
 }
 

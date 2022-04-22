@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:43:07 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 02:01:46 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:46:22 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,9 +77,8 @@ in_port_t itoaport(int *numbers)
 
 int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 {
-	t_server_verbs  *srv_verbs;
-	int             *numbers;
-	struct protoent *proto;
+	t_server_verbs *srv_verbs;
+	int            *numbers;
 
 	ftp_cli_send_pi(cli_ftp, PASSIVE_MODE, NULL);
 	srv_verbs = ftp_wait_for_response(cli_ftp);
@@ -87,16 +86,11 @@ int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 	{
 		numbers = get_numbers(get_last_word(srv_verbs->user_info));
 		if (numbers[0] == 6)
-		{
-			proto = getprotobyname("tcp");
-			if (!proto)
-				exit(EXIT_FAILURE);
-			cli_ftp->dtp.sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-			ft_bzero((char *)&cli_ftp->dtp.sin, sizeof(cli_ftp->dtp.sin));
-			cli_ftp->dtp.sin.sin_family = AF_INET;
-			cli_ftp->dtp.sin.sin_port = htons(itoaport(&(numbers[5])));
-			cli_ftp->dtp.sin.sin_addr.s_addr = itoaddr(&(numbers[1]));
-		}
+			cli_ftp->dtp.sin = ftp_get_socket_address(
+				stoaddr(itoaddr(&(numbers[1]))),
+				htons(itoaport(&(numbers[5]))));
+		else
+			error_print_exit(EXIT_FAILURE, "Unable to parse response server");
 	}
 	else if (srv_verbs->sr_state == NEG_TMP)
 		exit(EXIT_FAILURE_RETRY);

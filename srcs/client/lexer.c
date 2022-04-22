@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:14:50 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 01:37:03 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:45:35 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ t_server_verbs *ftp_cli_srv_lexer(char *str)
 	if (!ftp_is_valid_response_code(code))
 		return (NULL);
 	if (!(srv_verbs = (t_server_verbs *)malloc(sizeof(t_server_verbs))))
-		exit(EXIT_FAILURE_RETRY);
+		error_print_exit(EXIT_FAILURE_RETRY, "Malloc failed");
 	srv_verbs->user_info = !str[i] ? ft_strdup("") : ft_strdup(&(str[i + 1]));
 	srv_verbs->sr_code = ftp_get_ftp_code_enum(code);
 	srv_verbs->sr_state = ftp_get_state_code(code);

@@ -6,14 +6,15 @@ CC = gcc
 SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c \
 			  server/responses.c server/get_dir.c \
 			  server/cmd_files_management.c server/cmd_transfert.c \
-			  common/openssl.c common/read_sock.c
+			  common/openssl.c common/read_sock.c common/socket.c \
+			  common/error.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
 CLIENT_SRCS = client/main.c common/openssl.c \
 			  common/read_sock.c common/utils.c client/cmd_auth.c \
 			  client/cmd_files_management.c client/responses.c \
 			  client/cmd_general.c client/lexer.c client/protocol.c \
-			  client/cmd_transfert.c
+			  client/cmd_transfert.c common/socket.c common/error.c
 
 DEBUGGER := gdb
 

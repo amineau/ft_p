@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:50:22 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 01:39:04 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:49:10 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 	}
 
 	if (ret == -1)
-		exit(EXIT_FAILURE_RETRY);
+		error_print_exit(EXIT_FAILURE_RETRY, "Error on read response server");
 	return (srv_verbs);
 }
 
@@ -50,14 +50,15 @@ int ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args)
 	int   ret;
 	char *str;
 
-	if (debug == true)
+	if (debug)
 	{
+		ft_printf("\033[0;34mUSER-PI: %s", cmd);
 		if (!ft_strcmp(cmd, PASSWORD))
-			ft_printf("\033[0;34mUSER-PI: %s ****\n\033[0m", cmd);
+			ft_printf(" ****\n\033[0m");
 		else if (args)
-			ft_printf("\033[0;34mUSER-PI: %s %s\n\033[0m", cmd, args);
+			ft_printf(" %s\n\033[0m", args);
 		else
-			ft_printf("\033[0;34mUSER-PI: %s\n\033[0m", cmd);
+			ft_printf("\n\033[0m");
 	}
 	if (args)
 		str = ft_strcln2join(ft_straddc(cmd, ' '), ft_strjoin(args, FTP_EOC));

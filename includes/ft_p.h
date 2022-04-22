@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 00:46:31 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:35:52 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@
 #define EXIT_FAILURE_RETRY 2
 #define EXIT_FAILURE       1
 #define EXIT_SUCCESS       0
+
+#define ANONYMOUS_USER "Anonymous"
 
 /********** FTP COMMANDS **********/
 #define USERNAME               "USER"
@@ -150,7 +152,7 @@ typedef enum e_state
 typedef struct s_client_args
 {
 	struct in_addr ca_host;
-	int            ca_port;
+	in_port_t      ca_port;
 	char          *ca_user;
 	char          *ca_pass;
 	char          *ca_wdir;
@@ -213,6 +215,8 @@ typedef t_server_verbs (*t_server_action)(t_client_verbs *, t_srv_ftp *);
 
 extern t_bool debug;
 
+void error_print_exit(int status, const char *err);
+
 char *ft_getcwd(void);
 char *get_root(void);
 void  init_root_static(void);
@@ -266,6 +270,10 @@ t_server_verbs *ftp_cli_srv_lexer(char *str);
 int             ftp_cli_user_lexer(const char *buff, t_client_verbs *cv);
 void            ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
 
+struct sockaddr_in ftp_get_socket_address(struct in_addr addr, in_port_t port);
+void               ftp_connect_socket(int sock, struct sockaddr_in *sin);
+int                ftp_create_socket();
+
 int  ftp_create_channel(int sock);
 int  ftp_accept_connection(int sock);
 int  ftp_srv_send_pi(t_srv_transfert *srv_tranfert, t_ftp_code_enum code, char *description);
@@ -282,10 +290,13 @@ SSL_CTX *ftp_srv_create_context();
 SSL_CTX *ftp_cli_create_context();
 void     configure_context(SSL_CTX *ctx);
 void     ShowCerts(SSL *ssl);
+SSL     *ftp_create_ssl(int sock, SSL_CTX *ctx);
+void     ftp_connect_ssl(SSL *ssl);
 
 t_state         ftp_get_state_code(char *code);
 int             ftp_is_valid_response_code(char *code);
 t_ftp_code_enum ftp_get_ftp_code_enum(const char *code);
 struct in_addr  htoaddr(char *name);
+struct in_addr  stoaddr(in_addr_t s_addr);
 
 #endif

@@ -118,6 +118,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 # The maximum number of consecutive empty lines to keep.
 MaxEmptyLinesToKeep: 1
 
+ColumnLimit: 80
 
 # PointerAlignment (PointerAlignmentStyle)
 # Pointer and reference alignment style.

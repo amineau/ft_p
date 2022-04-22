@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:41:05 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 13:14:35 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:27:08 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int ftp_cli_cmd_logout(t_cli_ftp *cli_ftp, const char *args)
 	if (args)
 	{
 		put_no_req_arg(LOGOUT);
-		return 0;
+		return (0);
 	}
 	exit(EXIT_SUCCESS);
 }
@@ -31,20 +31,12 @@ int ftp_cli_cmd_auth(t_cli_ftp *cli_ftp)
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == POS_DEF)
 	{
-		cli_ftp->pi.ssl = SSL_new(*cli_ftp->ctx);
-		SSL_set_fd(cli_ftp->pi.ssl, cli_ftp->pi.sock);
-
-		if (SSL_connect(cli_ftp->pi.ssl) <= 0)
-		{
-			printf("SSL_connect failed\n");
-			exit(EXIT_FAILURE);
-		}
-		// printf("Connected with %s encryption\n", SSL_get_cipher(cli_ftp->pi.ssl));
-		// ShowCerts(cli_ftp->pi.ssl);
+		cli_ftp->pi.ssl = ftp_create_ssl(cli_ftp->pi.sock, *cli_ftp->ctx);
+		ftp_connect_ssl(cli_ftp->pi.ssl);
 		cli_ftp->pi.ssl_activated = true;
-		return 1;
+		return (1);
 	}
-	return 0;
+	return (0);
 }
 
 int ftp_cli_cmd_password(t_cli_ftp *cli_ftp, t_client_args *args)
@@ -57,7 +49,7 @@ int ftp_cli_cmd_password(t_cli_ftp *cli_ftp, t_client_args *args)
 		exit(EXIT_FAILURE_RETRY);
 	else if (srv_verbs->sr_state != POS_DEF)
 		exit(EXIT_FAILURE);
-	return 1;
+	return (1);
 }
 
 int ftp_cli_cmd_user(t_cli_ftp *cli_ftp, t_client_args *args)
@@ -72,7 +64,7 @@ int ftp_cli_cmd_user(t_cli_ftp *cli_ftp, t_client_args *args)
 		exit(EXIT_FAILURE_RETRY);
 	else if (srv_verbs->sr_state == NEG_DEF)
 		exit(EXIT_FAILURE);
-	return 1;
+	return (1);
 }
 
 int ftp_cli_cmd_protection_buffer_size(t_cli_ftp *cli_ftp)
@@ -85,7 +77,7 @@ int ftp_cli_cmd_protection_buffer_size(t_cli_ftp *cli_ftp)
 		exit(EXIT_FAILURE_RETRY);
 	else if (srv_verbs->sr_state != POS_DEF)
 		exit(EXIT_FAILURE);
-	return 1;
+	return (1);
 }
 
 int ftp_cli_cmd_protection(t_cli_ftp *cli_ftp)
@@ -100,5 +92,5 @@ int ftp_cli_cmd_protection(t_cli_ftp *cli_ftp)
 		exit(EXIT_FAILURE_RETRY);
 	else
 		exit(EXIT_FAILURE);
-	return 1;
+	return (1);
 }

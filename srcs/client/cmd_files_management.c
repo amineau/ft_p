@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:43:53 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 02:09:19 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:52:26 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,29 +19,13 @@ int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args)
 	char           *buff;
 
 	ftp_cli_send_pi(cli_ftp, LIST, args);
-	if (connect(cli_ftp->dtp.sock, (const struct sockaddr *)&cli_ftp->dtp.sin, sizeof(cli_ftp->dtp.sin)) == -1)
-	{
-		if (errno == EADDRINUSE)
-			printf("Local address is already in use\n");
-		else if (errno == ECONNREFUSED)
-			printf("Remote address not listening\n");
-		else
-			printf("Connect failed\n");
-		exit(EXIT_FAILURE);
-	}
-	printf("Client connected\n");
+	cli_ftp->dtp.sock = ftp_create_socket();
+	ftp_connect_socket(cli_ftp->dtp.sock, &cli_ftp->dtp.sin);
 	if (cli_ftp->dtp.ssl_activated == true)
 	{
-		cli_ftp->dtp.ssl = SSL_new(*cli_ftp->ctx);
-		SSL_set_fd(cli_ftp->dtp.ssl, cli_ftp->dtp.sock);
-
-		if (SSL_connect(cli_ftp->dtp.ssl) <= 0)
-		{
-			printf("SSL_connect failed\n");
-			exit(EXIT_FAILURE);
-		}
+		cli_ftp->dtp.ssl = ftp_create_ssl(cli_ftp->dtp.sock, *cli_ftp->ctx);
+		ftp_connect_ssl(cli_ftp->dtp.ssl);
 	}
-
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state != POS_TMP)
 		exit(EXIT_FAILURE_RETRY);
@@ -55,6 +39,9 @@ int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args)
 		shutdown_ssl(cli_ftp->dtp.ssl);
 	close(cli_ftp->dtp.sock);
 	if (ret == -1)
+		error_print_exit(EXIT_FAILURE_RETRY, "Unable to parse dtp response");
+	srv_verbs = ftp_wait_for_response(cli_ftp);
+	if (srv_verbs->sr_state != POS_DEF)
 		exit(EXIT_FAILURE_RETRY);
 	return 1;
 }

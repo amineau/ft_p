@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:17:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 01:45:33 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 19:37:43 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,7 @@ void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca)
 {
 	ftp_init_protocol(cli_ftp);
 	ftp_cli_cmd_auth(cli_ftp);
-	if (ca->ca_user)
-		ftp_cli_cmd_user(cli_ftp, ca);
+	ftp_cli_cmd_user(cli_ftp, ca);
 	if (cli_ftp->pi.ssl_activated)
 	{
 		ftp_cli_cmd_protection_buffer_size(cli_ftp);

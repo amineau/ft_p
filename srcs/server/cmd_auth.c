@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/20 13:56:34 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 20:51:32 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,13 @@ t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 		NULL};
 
 	(void)srv_ftp;
-	if (pam_start("common", cv->cv_arg, &conv, &cv->cv_pamh) == PAM_SUCCESS)
+	if (!ft_strcmp(cv->cv_arg, ANONYMOUS_USER))
+	{
+		sv.sr_code = _230;
+		sv.sr_state = POS_INT;
+		sv.user_info = "Loggin succeded";
+	}
+	else if (pam_start("common", cv->cv_arg, &conv, &cv->cv_pamh) == PAM_SUCCESS)
 	{
 		sv.sr_code = _331;
 		sv.sr_state = POS_INT;

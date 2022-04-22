@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 12:05:59 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:12:54 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,6 +153,7 @@ t_server_verbs cmd_list(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	DIR           *dp;
 	char          *cwd;
 	int            ret;
+	char          *args;
 
 	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock);
 	srv_ftp->dtp.ssl = SSL_new(*srv_ftp->ctx);
@@ -173,7 +174,10 @@ t_server_verbs cmd_list(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	}
 
 	ftp_srv_send_pi(&srv_ftp->pi, _150, "");
-	ftp_srv_pipe_dtp(&srv_ftp->dtp, "/bin/ls", (char *const[]){"ls", "-nl", cv->cv_arg, (char *)NULL});
+	args = NULL;
+	if (!ft_strcmp("-a", cv->cv_arg))
+		args = "-a";
+	ftp_srv_pipe_dtp(&srv_ftp->dtp, "/bin/ls", (char *const[]){"ls", "-nl", args, (char *)NULL});
 
 	sv.sr_code = _226;
 	sv.sr_state = POS_DEF;

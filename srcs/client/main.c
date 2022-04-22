@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 01:43:39 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 21:52:49 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,34 +20,6 @@ void usage(char *str)
 	exit(EXIT_FAILURE);
 }
 
-int create_client(struct in_addr host, int port)
-{
-	int                sock;
-	struct protoent   *proto;
-	struct sockaddr_in sin;
-
-	proto = getprotobyname("tcp");
-	if (!proto)
-		exit(EXIT_FAILURE);
-	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-	ft_bzero((char *)&sin, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-	sin.sin_addr = host;
-	if (connect(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
-	{
-		if (errno == EADDRINUSE)
-			printf("Local address is already in use\n");
-		else if (errno == ECONNREFUSED)
-			printf("Remote address not listening\n");
-		else
-			printf("Connect failed\n");
-		exit(EXIT_FAILURE);
-	}
-	printf("Client connected\n");
-	return (sock);
-}
-
 void getargs(int ac, char **av, struct s_client_args *ca)
 {
 	char opt;
@@ -55,15 +27,15 @@ void getargs(int ac, char **av, struct s_client_args *ca)
 	if (ac < 3)
 		usage(av[0]);
 	ca->ca_host = htoaddr("localhost");
-	ca->ca_port = 21;
-	ca->ca_user = "Anonymous";
+	ca->ca_port = htons(21);
+	ca->ca_user = ANONYMOUS_USER;
 	ca->ca_pass = NULL;
 	while ((opt = (char)getopt(ac, av, "hpuwd")) != -1)
 	{
 		if (opt == 'h')
 			ca->ca_host = htoaddr(av[optind]);
 		else if (opt == 'p')
-			ca->ca_port = ft_atoi(av[optind]);
+			ca->ca_port = htons(ft_atoi(av[optind]));
 		else if (opt == 'u')
 			ca->ca_user = ft_strdup(av[optind]);
 		else if (opt == 'w')
@@ -116,13 +88,15 @@ int main(int ac, char **av)
 	while (1)
 	{
 		pid = fork();
-		if (pid != 0)
+		if (pid == 0)
 		{
-			cli_ftp.pi.sock = create_client(ca.ca_host, ca.ca_port);
+			cli_ftp.pi.sin = ftp_get_socket_address(ca.ca_host, ca.ca_port);
+			cli_ftp.pi.sock = ftp_create_socket();
 			cli_ftp.pi.ssl = false;
 			cli_ftp.pi.ssl_activated = false;
 			cli_ftp.dtp.ssl_activated = false;
 
+			ftp_connect_socket(cli_ftp.pi.sock, &cli_ftp.pi.sin);
 			ftp_cli_connection_protocol(&cli_ftp, &ca);
 			ft_putstr("$> ");
 			while ((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
@@ -141,9 +115,7 @@ int main(int ac, char **av)
 			wait4(pid, &status, 0, 0);
 			ftp_free_ssl(&cli_ftp);
 			if (!status || status != EXIT_FAILURE_RETRY)
-			{
-				break;
-			}
+				return (status);
 			printf("Unable to establish a connection to the server\n");
 			printf("Wait for retry...\n");
 			sleep(5);
