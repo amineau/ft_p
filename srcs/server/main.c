@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:38:31 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/21 23:49:09 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int ftp_create_sock(int port)
 	if (!proto)
 		exit(EXIT_FAILURE);
 	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-	bzero((char *)&sin, sizeof(sin));
+	ft_bzero((char *)&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);

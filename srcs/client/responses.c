@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:50:22 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:38:28 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 01:39:04 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,27 +14,33 @@
 
 t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 {
-	int   ret;
-	char *buff;
+	int             ret;
+	char           *buff;
+	t_server_verbs *srv_verbs;
 
-	while ((ret = get_next_line_wrapper(
+	srv_verbs = NULL;
+	while (!srv_verbs &&
+		   (ret = get_next_line_wrapper(
 				cli_ftp->pi.sock,
 				cli_ftp->pi.ssl,
 				cli_ftp->pi.ssl_activated,
-				&buff)) >= 0)
+				&buff)) > 0)
 	{
 		if (debug)
 			printf("\033[0;32mSERVER-PI: %s\033[0m\n", buff);
-		return (ftp_cli_srv_lexer(buff));
+		srv_verbs = ftp_cli_srv_lexer(buff);
 	}
-	exit(EXIT_FAILURE_RETRY);
+
+	if (ret == -1)
+		exit(EXIT_FAILURE_RETRY);
+	return (srv_verbs);
 }
 
 t_server_verbs *ftp_wait_for_response(t_cli_ftp *cli_ftp)
 {
 	t_server_verbs *srv_verbs;
 
-	while ((srv_verbs = listen_server(cli_ftp)))
+	if ((srv_verbs = listen_server(cli_ftp)))
 		return srv_verbs;
 	exit(EXIT_FAILURE_RETRY);
 }

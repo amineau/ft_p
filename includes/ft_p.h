@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:38:28 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 00:46:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,6 +254,8 @@ int ftp_client_cmd_print_workdir(t_cli_ftp *cli_ftp, const char *args);
 int ftp_cli_cmd_help(t_cli_ftp *cli_ftp, const char *args);
 int ftp_cli_cmd_protection_buffer_size(t_cli_ftp *cli_ftp);
 int ftp_cli_cmd_protection(t_cli_ftp *cli_ftp);
+int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp);
+int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args);
 
 void put_req_arg(char *cmd);
 void put_no_req_arg(char *cmd);

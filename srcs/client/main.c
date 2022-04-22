@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 23:15:58 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 01:43:39 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_bool debug;
 
 void usage(char *str)
 {
-	printf("Usage: %s <host> <port> [-u <user name> [-p <passwd>]] [-d <debug>] -\n", str);
+	printf("Usage: %s [-h <host>] [-p <port>] [-u <user name> [-w <passwd>]] [-d <debug>] -\n", str);
 	exit(EXIT_FAILURE);
 }
 
@@ -30,6 +30,7 @@ int create_client(struct in_addr host, int port)
 	if (!proto)
 		exit(EXIT_FAILURE);
 	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
+	ft_bzero((char *)&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 	sin.sin_addr = host;
@@ -53,15 +54,19 @@ void getargs(int ac, char **av, struct s_client_args *ca)
 
 	if (ac < 3)
 		usage(av[0]);
-	ca->ca_host = htoaddr(av[1]);
-	ca->ca_port = ft_atoi(av[2]);
-	ca->ca_user = NULL;
+	ca->ca_host = htoaddr("localhost");
+	ca->ca_port = 21;
+	ca->ca_user = "Anonymous";
 	ca->ca_pass = NULL;
-	while ((opt = (char)getopt(ac, av, "upd")) != -1)
+	while ((opt = (char)getopt(ac, av, "hpuwd")) != -1)
 	{
-		if (opt == 'u')
-			ca->ca_user = ft_strdup(av[optind]);
+		if (opt == 'h')
+			ca->ca_host = htoaddr(av[optind]);
 		else if (opt == 'p')
+			ca->ca_port = ft_atoi(av[optind]);
+		else if (opt == 'u')
+			ca->ca_user = ft_strdup(av[optind]);
+		else if (opt == 'w')
 			ca->ca_pass = ft_strdup(av[optind]);
 		else if (opt == 'd')
 			debug = true;
@@ -82,7 +87,7 @@ void ftp_free_ssl(t_cli_ftp *cli_ftp)
 int user_parser(t_cli_ftp *cli_ftp, t_client_verbs *cv)
 {
 	t_client_action command[] = {
-		// list,
+		ftp_cli_cmd_list,
 		ftp_cli_cmd_change_workdir,
 		// get_file,
 		// put_file,
