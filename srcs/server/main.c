@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:55:38 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 10:25:52 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,71 +19,6 @@ void usage(char *str)
 {
 	printf("Usage: %s <port> [-r <root directory>] [-d <debug>]\n", str);
 	;
-}
-
-int ftp_create_sock(int port)
-{
-	int                sock;
-	struct protoent   *proto;
-	struct sockaddr_in sin;
-
-	proto = getprotobyname("tcp");
-	if (!proto)
-		exit(EXIT_FAILURE);
-	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-	ft_bzero((char *)&sin, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
-	{
-		if (errno == EACCES)
-			printf("This address is protected\n");
-		else if (errno == EADDRINUSE)
-			printf("This address is already in use\n");
-		else
-			printf("Bind failed");
-		exit(EXIT_FAILURE);
-	}
-	return sock;
-}
-
-int ftp_create_channel(int port)
-{
-	int sock;
-
-	sock = ftp_create_sock(port);
-	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
-	{
-		if (errno == ECONNREFUSED)
-			printf("The queue is full");
-		else
-			printf("Listen failed");
-		return (-1);
-	}
-	return (sock);
-}
-
-int ftp_accept_connection(int sock)
-{
-	int                cs;
-	struct sockaddr_in csin;
-	unsigned int       cslen;
-
-	errno = 0;
-	cslen = sizeof(csin);
-	if ((cs = accept(sock, (struct sockaddr *)&csin, &cslen)) == -1)
-	{
-		if (errno == EBADF)
-			printf("The file descriptor is invalid\n");
-		else if (errno == ECONNABORTED)
-			printf("The connection has been aborted\n");
-		else
-			printf("Accept failed\n\terrno : %d\n\terror : %s\n",
-				   errno,
-				   strerror(errno));
-	}
-	return (cs);
 }
 
 // TODO : Merge with user_lexer (client.c)
@@ -151,23 +86,17 @@ t_srv_ftp *ftp_srv_ftp_init()
 	return (srv_ftp);
 }
 
-void listen_clients(int sock, SSL_CTX *ctx)
+void listen_clients(t_srv_ftp *srv_ftp)
 {
-	int   r;
-	char *buff;
-	// pid_t          pid;
+	char          *buff;
 	t_client_verbs cv;
 	t_server_verbs sv;
-	t_srv_ftp     *srv_ftp = ftp_srv_ftp_init();
 
-	srv_ftp->pi.cs = ftp_accept_connection(sock);
-	srv_ftp->ctx = &ctx;
+	srv_ftp->pi.cs = ftp_accept_connection(srv_ftp->pi.sock);
 	ftp_srv_send_pi(&srv_ftp->pi, _220, "Server available for new user");
-
-	while ((r = get_next_line_wrapper(srv_ftp->pi.cs,
-									  srv_ftp->pi.ssl,
-									  srv_ftp->pi.ssl_activated,
-									  &buff)) >= 0)
+	while (get_next_line_wrapper(
+			   srv_ftp->pi.cs, srv_ftp->pi.ssl, srv_ftp->pi.ssl_activated, &buff) >
+		   0)
 	{
 		sv = ftp_lexer(buff, &cv);
 		if (sv.sr_state == POS_TMP)
@@ -232,19 +161,35 @@ void ftp_srv_user_prompt()
 
 void ftp_srv_run(int port)
 {
-	SSL_CTX *ctx;
-	int      sock;
+	int        i = 0;
+	SSL_CTX   *ctx;
+	t_srv_ftp *srv_ftp;
+
+	srv_ftp = ftp_srv_ftp_init();
 
 	init_openssl();
 	ctx = ftp_srv_create_context();
+	srv_ftp->ctx = &ctx;
 	configure_context(ctx);
 
-	sock = ftp_create_channel(port);
-	listen_clients(sock, ctx);
-	close(sock);
-
-	SSL_CTX_free(ctx);
-	cleanup_openssl();
+	srv_ftp->pi.sin =
+		ftp_get_socket_address(stoaddr(htonl(INADDR_ANY)), htons(port));
+	srv_ftp->pi.sock = ftp_create_socket();
+	ftp_bind_socket(srv_ftp->pi.sock, &srv_ftp->pi.sin);
+	ftp_listen_connection(srv_ftp->pi.sock);
+	if (fork() == 0)
+	{
+		while (i++ < MAX_CLIENT_CONNECTION)
+			if (fork() == 0)
+				listen_clients(srv_ftp);
+	}
+	else
+	{
+		ftp_srv_user_prompt();
+		close(srv_ftp->pi.sock);
+		SSL_CTX_free(ctx);
+		cleanup_openssl();
+	}
 }
 
 void ftp_print_chdir_error(const char *path)
@@ -287,6 +232,5 @@ int main(int ac, char **av)
 		ftp_srv_user_prompt();
 	else
 		ftp_srv_run(sa.sa_port);
-	printf("Client disconnected");
 	return (EXIT_SUCCESS);
 }

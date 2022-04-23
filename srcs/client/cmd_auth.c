@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:41:05 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:27:08 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 23:00:25 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@ int ftp_cli_cmd_logout(t_cli_ftp *cli_ftp, const char *args)
 		put_no_req_arg(LOGOUT);
 		return (0);
 	}
+	// if (cli_ftp->dtp.ssl_activated)
+	// 	shutdown_ssl(cli_ftp->dtp.ssl);
+	close(cli_ftp->pi.sock);
 	exit(EXIT_SUCCESS);
 }
 

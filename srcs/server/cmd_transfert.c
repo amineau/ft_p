@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 22:02:21 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 10:19:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,27 +62,73 @@ char *porttostr(in_port_t sin_port)
 	return str;
 }
 
+int ftp_create_sock(int port)
+{
+	int                sock;
+	struct protoent   *proto;
+	struct sockaddr_in sin;
+
+	proto = getprotobyname("tcp");
+	if (!proto)
+		exit(EXIT_FAILURE);
+	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
+	ft_bzero((char *)&sin, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(port);
+	sin.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
+	{
+		if (errno == EACCES)
+			printf("This address is protected\n");
+		else if (errno == EADDRINUSE)
+			printf("This address is already in use\n");
+		else
+			printf("Bind failed");
+		exit(EXIT_FAILURE);
+	}
+	return sock;
+}
+
+int ftp_create_channel(int port)
+{
+	int sock;
+
+	sock = ftp_create_sock(port);
+	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
+	{
+		if (errno == ECONNREFUSED)
+			printf("The queue is full");
+		else
+			printf("Listen failed");
+		return (-1);
+	}
+	return (sock);
+}
+
 t_server_verbs cmd_passive_mode(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs     sv;
-	struct sockaddr_in sin;
-	socklen_t          sinlen;
-	char              *port;
-	char              *addr;
+	t_server_verbs sv;
+	socklen_t      sinlen;
+	char          *port;
+	char          *addr;
 
 	(void)cv;
-	sinlen = sizeof(sin);
-	srv_ftp->dtp.sock = ftp_create_channel(0);
+	srv_ftp->dtp.sin = ftp_get_socket_address(srv_ftp->pi.sin.sin_addr, htons(0));
+	srv_ftp->dtp.sock = ftp_create_socket();
+	ftp_bind_socket(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
+	ftp_listen_connection(srv_ftp->dtp.sock);
 
-	if (getsockname(srv_ftp->dtp.sock, (struct sockaddr *)&sin, &sinlen) != 0)
+	sinlen = sizeof(srv_ftp->dtp.sin);
+	if (getsockname(
+			srv_ftp->dtp.sock, (struct sockaddr *)&srv_ftp->dtp.sin, &sinlen) != 0)
 	{
 		sv.sr_code = _421;
 		sv.sr_state = NEG_DEF;
 		sv.user_info = "Cannot open data connection.";
 		return (sv);
 	}
-	addr = addrtostr(sin.sin_addr.s_addr);
-	port = porttostr(sin.sin_port);
+	addr = addrtostr(srv_ftp->dtp.sin.sin_addr.s_addr);
+	port = porttostr(srv_ftp->dtp.sin.sin_port);
 	sv.sr_code = _227;
 	sv.sr_state = POS_INT;
 	sv.user_info =

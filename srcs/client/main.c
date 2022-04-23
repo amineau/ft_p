@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:52:49 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/22 22:59:08 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,41 +86,42 @@ int main(int ac, char **av)
 	init_openssl();
 	ctx = ftp_cli_create_context();
 	cli_ftp.ctx = &ctx;
-	while (1)
-	{
-		pid = fork();
-		if (pid == 0)
-		{
-			cli_ftp.pi.sin = ftp_get_socket_address(ca.ca_host, ca.ca_port);
-			cli_ftp.pi.sock = ftp_create_socket();
-			cli_ftp.pi.ssl = false;
-			cli_ftp.pi.ssl_activated = false;
-			cli_ftp.dtp.ssl_activated = false;
 
-			ftp_connect_socket(cli_ftp.pi.sock, &cli_ftp.pi.sin);
-			ftp_cli_connection_protocol(&cli_ftp, &ca);
-			ft_putstr("$> ");
-			while ((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
-			{
-				if (ftp_cli_user_lexer(buff, &cv) == -1)
-				{
-					ft_putstr("$> ");
-					continue;
-				}
-				user_parser(&cli_ftp, &cv);
-				ft_putstr("$> ");
-			}
-		}
-		else
+	pid = fork();
+	if (pid != 0)
+	{
+		cli_ftp.pi.sin = ftp_get_socket_address(ca.ca_host, ca.ca_port);
+		cli_ftp.pi.sock = ftp_create_socket();
+		cli_ftp.pi.ssl = NULL;
+		cli_ftp.pi.ssl_activated = false;
+		cli_ftp.dtp.sock = 0;
+		cli_ftp.dtp.ssl = NULL;
+		cli_ftp.dtp.ssl_activated = false;
+
+		ftp_connect_socket(cli_ftp.pi.sock, &cli_ftp.pi.sin);
+		ftp_cli_connection_protocol(&cli_ftp, &ca);
+		ft_putstr("$> ");
+		while ((gnllen = get_next_line(STDIN_FILENO, &buff)) > 0)
 		{
-			wait4(pid, &status, 0, 0);
-			ftp_free_ssl(&cli_ftp);
-			if (!status || status != EXIT_FAILURE_RETRY)
-				return (status);
-			printf("Unable to establish a connection to the server\n");
-			printf("Wait for retry...\n");
-			sleep(5);
+			if (ftp_cli_user_lexer(buff, &cv) == -1)
+			{
+				ft_putstr("$> ");
+				continue;
+			}
+			user_parser(&cli_ftp, &cv);
+			ft_putstr("$> ");
 		}
 	}
+	else
+	{
+		wait4(pid, &status, 0, 0);
+		ftp_free_ssl(&cli_ftp);
+		if (!status || status != EXIT_FAILURE_RETRY)
+			return (status);
+		printf("Unable to establish a connection to the server\n");
+		printf("Wait for retry...\n");
+		sleep(5);
+	}
+
 	return (0);
 }

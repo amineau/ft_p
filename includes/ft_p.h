@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:35:52 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 09:30:51 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,10 +182,11 @@ typedef struct s_server_verbs
 
 typedef struct s_srv_transfert
 {
-	int    cs;
-	int    sock;
-	SSL   *ssl;
-	t_bool ssl_activated;
+	struct sockaddr_in sin;
+	int                cs;
+	int                sock;
+	SSL               *ssl;
+	t_bool             ssl_activated;
 } t_srv_transfert;
 
 typedef struct s_srv_ftp
@@ -273,9 +274,10 @@ void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
 struct sockaddr_in ftp_get_socket_address(struct in_addr addr, in_port_t port);
 void               ftp_connect_socket(int sock, struct sockaddr_in *sin);
 int                ftp_create_socket();
+int                ftp_accept_connection(int sock);
+void               ftp_bind_socket(int sock, struct sockaddr_in *sin);
+int                ftp_listen_connection(int sock);
 
-int  ftp_create_channel(int sock);
-int  ftp_accept_connection(int sock);
 int  ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
 					 t_ftp_code_enum  code,
 					 char            *description);
