@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/18 02:19:49 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:44:03 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 22:23:23 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,17 +20,17 @@ void ShowCerts(SSL *ssl)
 	cert = SSL_get_peer_certificate(ssl); /* get the server's certificate */
 	if (cert != NULL)
 	{
-		printf("Server certificates:\n");
+		ft_printf("Server certificates:\n");
 		line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
-		printf("Subject: %s\n", line);
+		ft_printf("Subject: %s\n", line);
 		free(line); /* free the malloc'ed string */
 		line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
-		printf("Issuer: %s\n", line);
+		ft_printf("Issuer: %s\n", line);
 		free(line);      /* free the malloc'ed string */
 		X509_free(cert); /* free the malloc'ed certificate copy */
 	}
 	else
-		printf("Info: No client certificates configured.\n");
+		ft_printf("Info: No client certificates configured.\n");
 }
 
 void init_openssl()
@@ -104,4 +104,10 @@ void ftp_connect_ssl(SSL *ssl)
 {
 	if (SSL_connect(ssl) <= 0)
 		error_print_exit(EXIT_FAILURE, "SSL_connect failed");
+}
+
+void ftp_accept_ssl(SSL *ssl)
+{
+	if (SSL_accept(ssl) <= 0)
+		ft_printf("Warning: SSL failed\n");
 }

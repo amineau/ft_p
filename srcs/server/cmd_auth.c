@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 20:51:32 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	const struct pam_conv conv = {&pamconv, NULL};
 
 	(void)srv_ftp;
-	if (!ft_strcmp(cv->cv_arg, ANONYMOUS_USER))
+	if (!ft_strcasecmp(cv->cv_arg, ANONYMOUS_USER))
 	{
 		sv.sr_code = _230;
 		sv.sr_state = POS_INT;
@@ -116,7 +116,7 @@ int wait_for_ssl_client(t_srv_ftp *srv_ftp)
 	{
 		if (SSL_accept(srv_ftp->pi.ssl) <= 0)
 		{
-			printf("Warning: SSL failed\n");
+			ft_printf("Warning: SSL failed\n");
 			ERR_print_errors_fp(stderr);
 			shutdown_ssl(srv_ftp->pi.ssl);
 			return false;

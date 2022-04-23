@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 05:56:41 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/21 12:55:21 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ char *ft_getcwd(void)
 		exit(EXIT_FAILURE);
 	if (!getcwd(str, PATH_MAX))
 	{
-		printf("getcwd failed");
+		ft_printf("getcwd failed");
 		exit(EXIT_FAILURE);
 	}
 	return (str);

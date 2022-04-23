@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:12:54 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 01:10:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_server_verbs cmd_print_workdir(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
 	t_server_verbs sv;
 	char          *wdir;
-	char           buff[BUFF_SIZE];
+	// char           buff[BUFF_SIZE];
 
 	(void)srv_ftp;
 	if (cv->cv_arg)
@@ -28,11 +28,12 @@ t_server_verbs cmd_print_workdir(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	else
 	{
 		wdir = get_wdir();
-		sprintf(buff, "\"%s\" is the current directory", wdir);
-		ft_strdel(&wdir);
+		// sft_printf(buff, "\"%s\" is the current directory", wdir);
 		sv.sr_code = _257;
 		sv.sr_state = POS_DEF;
-		sv.user_info = buff;
+		sv.user_info = ft_arrayjoin(
+			(char *[]){"\"", wdir, "\" is the current directory", NULL});
+		ft_strdel(&wdir);
 	}
 	return sv;
 }
@@ -108,8 +109,39 @@ t_server_verbs cmd_representation_type(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 }
 t_server_verbs cmd_retrieve(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
-	(void)cv;
-	return (cmd_not_implemented(RETRIEVE, srv_ftp));
+	t_server_verbs sv;
+	int            fd;
+	char           buff[10];
+
+	if ((fd = open(cv->cv_arg, O_RDONLY)) == -1)
+	{
+		sv.sr_code = _421;
+		sv.sr_state = NEG_DEF;
+		sv.user_info = "Failed to open file";
+		return sv;
+	}
+	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
+	if (srv_ftp->pi.ssl_activated)
+	{
+		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
+		ftp_accept_ssl(srv_ftp->dtp.ssl);
+	}
+
+	ftp_srv_send_pi(&srv_ftp->pi, _150, "");
+	while (read(fd, buff, 10 - 1) > 0)
+	{
+		buff[10 - 1] = '\0';
+		ftp_srv_send_dtp(&srv_ftp->dtp, buff);
+		ft_bzero(buff, 10);
+	}
+	sv.sr_code = _226;
+	sv.sr_state = POS_DEF;
+	sv.user_info = "";
+	close(fd);
+	if (srv_ftp->pi.ssl_activated)
+		shutdown_ssl(srv_ftp->dtp.ssl);
+	close(srv_ftp->dtp.cs);
+	return (sv);
 }
 t_server_verbs cmd_store(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {
@@ -152,18 +184,14 @@ t_server_verbs cmd_list(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	t_server_verbs sv;
 	DIR           *dp;
 	char          *cwd;
-	int            ret;
 	char          *args;
 
-	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock);
-	srv_ftp->dtp.ssl = SSL_new(*srv_ftp->ctx);
-	SSL_set_fd(srv_ftp->dtp.ssl, srv_ftp->dtp.cs);
-	if ((ret = SSL_accept(srv_ftp->dtp.ssl)) <= 0)
+	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
+	if (srv_ftp->pi.ssl_activated)
 	{
-		printf("Warning: SSL failed\n");
-		exit(EXIT_FAILURE);
+		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
+		ftp_accept_ssl(srv_ftp->dtp.ssl);
 	}
-
 	cwd = ft_getcwd();
 	if ((dp = opendir(cwd)) == NULL)
 	{
@@ -185,7 +213,8 @@ t_server_verbs cmd_list(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	sv.sr_state = POS_DEF;
 	sv.user_info = "";
 	closedir(dp);
-	shutdown_ssl(srv_ftp->dtp.ssl);
+	if (srv_ftp->pi.ssl_activated)
+		shutdown_ssl(srv_ftp->dtp.ssl);
 	close(srv_ftp->dtp.cs);
 
 	ft_strdel(&cwd);

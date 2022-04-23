@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/19 12:47:47 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 01:12:50 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 21:39:39 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,7 @@
 
 #include "ft_p.h"
 
-static const char *g_user_cmd_str[] = {"ls",
-									   "cd",
-									   // "get",
-									   // "put",
-									   "pwd",
-									   "quit",
-									   "help",
-									   NULL};
+static const char *g_user_cmd_str[] = {
+	"ls", "cd", "get", "put", "pwd", "quit", "help", NULL};
 
 #endif

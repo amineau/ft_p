@@ -6,11 +6,12 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:50:22 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:49:10 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 00:14:40 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_p.h"
+#include "ftp_srv_cmd_static.h"
 
 t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 {
@@ -23,10 +24,11 @@ t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 		   (ret = get_next_line_wrapper(cli_ftp->pi.sock,
 										cli_ftp->pi.ssl,
 										cli_ftp->pi.ssl_activated,
-										&buff)) > 0)
+										&buff,
+										FTP_EOC)) > 0)
 	{
 		if (debug)
-			printf("\033[0;32mSERVER-PI: %s\033[0m\n", buff);
+			ft_printf("\033[0;32mSERVER-PI: %s\033[0m\n", buff);
 		srv_verbs = ftp_cli_srv_lexer(buff);
 	}
 
@@ -52,7 +54,7 @@ int ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args)
 	if (debug)
 	{
 		ft_printf("\033[0;34mUSER-PI: %s", cmd);
-		if (!ft_strcmp(cmd, PASSWORD))
+		if (!ft_strcmp(cmd, cmd_str[PASSWORD]))
 			ft_printf(" ****\n\033[0m");
 		else if (args)
 			ft_printf(" %s\n\033[0m", args);

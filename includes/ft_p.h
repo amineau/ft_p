@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 09:30:51 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 00:15:22 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,13 +34,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define MAX_PENDING_CONNECTIONS 42
-#define MAX_CLIENT_CONNECTION   8
+#define MAX_PENDING_CONNECTIONS 2
+#define MAX_CLIENT_CONNECTION   2
 
 #define TLS_VERSION "TLSv1.3"
 
 #define CRLF "\r\n"
-#define LF   '\n'
+#define LF   "\n"
 
 #define FTP_EOC CRLF
 #define FTP_EOR 0xFF 0x01
@@ -57,34 +57,36 @@
 
 #define ANONYMOUS_USER "Anonymous"
 
-/********** FTP COMMANDS **********/
-#define USERNAME               "USER"
-#define PASSWORD               "PASS"
-#define ACCOUNT                "ACCT"
-#define AUTH_METHOD            "AUTH"
-#define CHANGE_WORKDIR         "CWD"
-#define CHANGE_TO_PARENT_DIR   "CDUP"
-#define LOGOUT                 "QUIT"
-#define PORT                   "PORT"
-#define PASSIVE_MODE           "PASV"
-#define REPRESENTATION_TYPE    "TYPE"
-#define RETRIEVE               "RETR"
-#define STORE                  "STOR"
-#define RENAME_FROM            "RNFR"
-#define RENAME_TO              "RNTO"
-#define ABORT                  "ABOR"
-#define DELETE                 "DELE"
-#define REMOVE_DIR             "RMD"
-#define MAKE_DIR               "MKD"
-#define PRINT_WORKDIR          "PWD"
-#define LIST                   "LIST"
-#define SYSTEM                 "SYST"
-#define PROTECTION_BUFFER_SIZE "PBSZ"
-#define PROTECTION             "PROT"
-#define NOOP                   "NOOP"
-/**********************************/
-
 /*********** FTP CODE *************/
+
+typedef enum e_cmd
+{
+	USERNAME,
+	PASSWORD,
+	ACCOUNT,
+	AUTH_METHOD,
+	CHANGE_WORKDIR,
+	CHANGE_TO_PARENT_DIR,
+	LOGOUT,
+	PORT,
+	PASSIVE_MODE,
+	REPRESENTATION_TYPE,
+	RETRIEVE,
+	STORE,
+	RENAME_FROM,
+	RENAME_TO,
+	ABORT,
+	DELETE,
+	REMOVE_DIR,
+	MAKE_DIR,
+	PRINT_WORKDIR,
+	LIST,
+	SYSTEM,
+	PROTECTION_BUFFER_SIZE,
+	PROTECTION,
+	NOOP,
+} t_cmd;
+
 typedef enum e_ftp_code
 {
 	_100,
@@ -160,9 +162,9 @@ typedef struct s_client_args
 
 typedef struct s_server_args
 {
-	int    sa_port;
-	char  *sa_root;
-	t_bool sa_debug;
+	in_port_t sa_port;
+	char     *sa_root;
+	t_bool    sa_debug;
 } t_server_args;
 
 typedef struct s_client_verbs
@@ -209,6 +211,7 @@ typedef struct s_cli_ftp
 	t_cli_transfert pi;
 	t_cli_transfert dtp;
 	SSL_CTX       **ctx;
+	char           *pwd;
 } t_cli_ftp;
 
 typedef int (*t_client_action)(t_cli_ftp *, const char *);
@@ -224,7 +227,7 @@ void  init_root_static(void);
 char *get_wdir(void);
 int   ftp_change_wdir(const char *dir);
 
-t_server_verbs cmd_not_implemented(char *str, t_srv_ftp *srv_ftp);
+t_server_verbs cmd_not_implemented(t_cmd cmd, t_srv_ftp *srv_ftp);
 t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp);
 t_server_verbs cmd_password(t_client_verbs *cv, t_srv_ftp *srv_ftp);
 t_server_verbs cmd_account(t_client_verbs *cv, t_srv_ftp *srv_ftp);
@@ -255,26 +258,29 @@ int ftp_cli_cmd_auth(t_cli_ftp *cli_ftp);
 int ftp_cli_cmd_password(t_cli_ftp *cli_ftp, t_client_args *args);
 int ftp_cli_cmd_user(t_cli_ftp *cli_ftp, t_client_args *args);
 int ftp_cli_cmd_change_workdir(t_cli_ftp *cli_ftp, const char *args);
-int ftp_client_cmd_print_workdir(t_cli_ftp *cli_ftp, const char *args);
+int ftp_cli_cmd_print_workdir(t_cli_ftp *cli_ftp, const char *args);
 int ftp_cli_cmd_help(t_cli_ftp *cli_ftp, const char *args);
 int ftp_cli_cmd_protection_buffer_size(t_cli_ftp *cli_ftp);
 int ftp_cli_cmd_protection(t_cli_ftp *cli_ftp);
 int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp);
 int ftp_cli_cmd_list(t_cli_ftp *cli_ftp, const char *args);
+int ftp_cli_cmd_get_file(t_cli_ftp *cli_ftp, const char *args);
+int ftp_cli_cmd_put_file(t_cli_ftp *cli_ftp, const char *args);
 
-void put_req_arg(char *cmd);
-void put_no_req_arg(char *cmd);
+void put_req_arg(t_cmd cmd);
+void put_no_req_arg(t_cmd cmd);
 
 int ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args);
 t_server_verbs *ftp_wait_for_response(t_cli_ftp *cli_ftp);
 t_server_verbs *ftp_cli_srv_lexer(char *str);
-int             ftp_cli_user_lexer(const char *buff, t_client_verbs *cv);
+t_client_verbs *ftp_cli_user_lexer(const char *str);
+
 void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
 
 struct sockaddr_in ftp_get_socket_address(struct in_addr addr, in_port_t port);
 void               ftp_connect_socket(int sock, struct sockaddr_in *sin);
 int                ftp_create_socket();
-int                ftp_accept_connection(int sock);
+int                ftp_accept_connection(int sock, struct sockaddr_in *sin);
 void               ftp_bind_socket(int sock, struct sockaddr_in *sin);
 int                ftp_listen_connection(int sock);
 
@@ -286,8 +292,8 @@ void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert,
 					  const char      *path,
 					  char *const      argv[]);
 
-// int get_next_line_wrapper(t_srv_transfert *srv_transfert, char *buff);
-int get_next_line_wrapper(int fd, SSL *ssl, t_bool ssl_activate, char **buff);
+int get_next_line_wrapper(
+	int fd, SSL *ssl, t_bool ssl_activate, char **buff, char *eol);
 
 void     init_openssl();
 void     cleanup_openssl();
@@ -298,6 +304,7 @@ void     configure_context(SSL_CTX *ctx);
 void     ShowCerts(SSL *ssl);
 SSL     *ftp_create_ssl(int sock, SSL_CTX *ctx);
 void     ftp_connect_ssl(SSL *ssl);
+void     ftp_accept_ssl(SSL *ssl);
 
 t_state         ftp_get_state_code(char *code);
 int             ftp_is_valid_response_code(char *code);

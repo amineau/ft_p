@@ -6,11 +6,12 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:41:05 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 23:00:25 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:23:40 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_p.h"
+#include "ftp_srv_cmd_static.h"
 
 int ftp_cli_cmd_logout(t_cli_ftp *cli_ftp, const char *args)
 {
@@ -20,8 +21,8 @@ int ftp_cli_cmd_logout(t_cli_ftp *cli_ftp, const char *args)
 		put_no_req_arg(LOGOUT);
 		return (0);
 	}
-	// if (cli_ftp->dtp.ssl_activated)
-	// 	shutdown_ssl(cli_ftp->dtp.ssl);
+	if (cli_ftp->pi.ssl_activated)
+		shutdown_ssl(cli_ftp->pi.ssl);
 	close(cli_ftp->pi.sock);
 	exit(EXIT_SUCCESS);
 }
@@ -30,7 +31,7 @@ int ftp_cli_cmd_auth(t_cli_ftp *cli_ftp)
 {
 	t_server_verbs *srv_verbs;
 
-	ftp_cli_send_pi(cli_ftp, AUTH_METHOD, "TLS");
+	ftp_cli_send_pi(cli_ftp, cmd_str[AUTH_METHOD], "TLS");
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == POS_DEF)
 	{
@@ -46,7 +47,7 @@ int ftp_cli_cmd_password(t_cli_ftp *cli_ftp, t_client_args *args)
 {
 	t_server_verbs *srv_verbs;
 
-	ftp_cli_send_pi(cli_ftp, PASSWORD, args->ca_pass);
+	ftp_cli_send_pi(cli_ftp, cmd_str[PASSWORD], args->ca_pass);
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == NEG_TMP)
 		exit(EXIT_FAILURE_RETRY);
@@ -59,7 +60,7 @@ int ftp_cli_cmd_user(t_cli_ftp *cli_ftp, t_client_args *args)
 {
 	t_server_verbs *srv_verbs;
 
-	ftp_cli_send_pi(cli_ftp, USERNAME, args->ca_user);
+	ftp_cli_send_pi(cli_ftp, cmd_str[USERNAME], args->ca_user);
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == POS_INT)
 		ftp_cli_cmd_password(cli_ftp, args);
@@ -74,7 +75,7 @@ int ftp_cli_cmd_protection_buffer_size(t_cli_ftp *cli_ftp)
 {
 	t_server_verbs *srv_verbs;
 
-	ftp_cli_send_pi(cli_ftp, PROTECTION_BUFFER_SIZE, "0");
+	ftp_cli_send_pi(cli_ftp, cmd_str[PROTECTION_BUFFER_SIZE], "0");
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == NEG_TMP)
 		exit(EXIT_FAILURE_RETRY);
@@ -87,7 +88,7 @@ int ftp_cli_cmd_protection(t_cli_ftp *cli_ftp)
 {
 	t_server_verbs *srv_verbs;
 
-	ftp_cli_send_pi(cli_ftp, PROTECTION, "P");
+	ftp_cli_send_pi(cli_ftp, cmd_str[PROTECTION], "P");
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == POS_DEF)
 		cli_ftp->dtp.ssl_activated = true;

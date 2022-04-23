@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:08:29 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 09:46:48 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ void ftp_connect_socket(int sock, struct sockaddr_in *sin)
 			err = "Connect failed";
 		error_print_exit(EXIT_FAILURE, err);
 	}
-	printf("Socket connected\n");
 }
 
 void ftp_bind_socket(int sock, struct sockaddr_in *sin)
@@ -67,28 +66,29 @@ void ftp_bind_socket(int sock, struct sockaddr_in *sin)
 			err = "Bind failed";
 		error_print_exit(EXIT_FAILURE, err);
 	}
-	printf("Socket binded\n");
 }
 
-int ftp_accept_connection(int sock)
+int ftp_accept_connection(int sock, struct sockaddr_in *sin)
 {
-	int                cs;
-	struct sockaddr_in csin;
-	unsigned int       cslen;
+	int          cs;
+	unsigned int cslen;
+	char         str[INET_ADDRSTRLEN];
 
+	cslen = sizeof(*sin);
 	errno = 0;
-	cslen = sizeof(csin);
-	if ((cs = accept(sock, (struct sockaddr *)&csin, &cslen)) == -1)
+	if ((cs = accept(sock, (struct sockaddr *)sin, &cslen)) == -1)
 	{
 		if (errno == EBADF)
-			printf("The file descriptor is invalid\n");
+			ft_printf("The file descriptor is invalid\n");
 		else if (errno == ECONNABORTED)
-			printf("The connection has been aborted\n");
+			ft_printf("The connection has been aborted\n");
 		else
-			printf("Accept failed\n\terrno : %d\n\terror : %s\n",
-				   errno,
-				   strerror(errno));
+			ft_printf("Accept failed\n\terrno : %d\n\terror : %s\n",
+					  errno,
+					  strerror(errno));
 	}
+	inet_ntop(AF_INET, &(sin->sin_addr), str, INET_ADDRSTRLEN);
+	ft_printf("Connect to %s:%d\n", str, ntohs(sin->sin_port));
 	return (cs);
 }
 
@@ -97,9 +97,9 @@ int ftp_listen_connection(int sock)
 	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
 	{
 		if (errno == ECONNREFUSED)
-			printf("The queue is full");
+			ft_printf("The queue is full");
 		else
-			printf("Listen failed");
+			ft_printf("Listen failed");
 		return (-1);
 	}
 	return (1);

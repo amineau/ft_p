@@ -6,11 +6,12 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:43:07 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:46:22 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 17:27:40 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_p.h"
+#include "ftp_srv_cmd_static.h"
 
 char *get_last_word(const char *str)
 {
@@ -81,7 +82,7 @@ int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 	t_server_verbs *srv_verbs;
 	int            *numbers;
 
-	ftp_cli_send_pi(cli_ftp, PASSIVE_MODE, NULL);
+	ftp_cli_send_pi(cli_ftp, cmd_str[PASSIVE_MODE], NULL);
 	srv_verbs = ftp_wait_for_response(cli_ftp);
 	if (srv_verbs->sr_state == POS_DEF)
 	{

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 10:19:14 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,11 +79,11 @@ int ftp_create_sock(int port)
 	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
 	{
 		if (errno == EACCES)
-			printf("This address is protected\n");
+			ft_printf("This address is protected\n");
 		else if (errno == EADDRINUSE)
-			printf("This address is already in use\n");
+			ft_printf("This address is already in use\n");
 		else
-			printf("Bind failed");
+			ft_printf("Bind failed");
 		exit(EXIT_FAILURE);
 	}
 	return sock;
@@ -97,9 +97,9 @@ int ftp_create_channel(int port)
 	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
 	{
 		if (errno == ECONNREFUSED)
-			printf("The queue is full");
+			ft_printf("The queue is full");
 		else
-			printf("Listen failed");
+			ft_printf("Listen failed");
 		return (-1);
 	}
 	return (sock);

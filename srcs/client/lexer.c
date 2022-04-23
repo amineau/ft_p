@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:14:50 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:45:35 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,22 +36,25 @@ t_server_verbs *ftp_cli_srv_lexer(char *str)
 	return srv_verbs;
 }
 
-int ftp_cli_user_lexer(const char *buff, t_client_verbs *cv)
+t_client_verbs *ftp_cli_user_lexer(const char *str)
 {
-	char **split;
-	int    code_command;
+	char          **split;
+	int             code_command;
+	t_client_verbs *cv;
 
-	split = ft_strsplit(buff, ' ');
+	split = ft_strsplit(str, ' ');
 	if (!split[0])
-		return (-1);
+		return (NULL);
 	else if ((code_command = ft_arraystr(g_user_cmd_str, split[0])) == -1)
 	{
-		printf("Unkwown command : [%s]\nType help for more information\n",
-			   split[0]);
-		return (-1);
+		ft_printf("Unkwown command : [%s]\nType help for more information\n",
+				  split[0]);
+		return (NULL);
 	}
+	if (!(cv = (t_client_verbs *)malloc(sizeof(t_client_verbs))))
+		error_print_exit(EXIT_FAILURE_RETRY, "Malloc failed");
 	cv->cv_verb = split[0];
 	cv->cv_arg = split[1];
 	cv->cv_code = code_command;
-	return (0);
+	return (cv);
 }
