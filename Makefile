@@ -14,7 +14,8 @@ CLIENT_SRCS = client/main.c common/openssl.c \
 			  common/read_sock.c common/utils.c client/cmd_auth.c \
 			  client/cmd_files_management.c client/responses.c \
 			  client/cmd_general.c client/lexer.c client/protocol.c \
-			  client/cmd_transfert.c common/socket.c common/error.c
+			  client/cmd_transfert.c common/socket.c common/error.c \
+			  client/cmd_local.c
 
 DEBUGGER := gdb
 

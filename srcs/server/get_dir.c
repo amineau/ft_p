@@ -6,25 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 05:56:41 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 01:51:22 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_p.h"
-
-char *ft_getcwd(void)
-{
-	char *str;
-
-	if ((str = (char *)malloc(sizeof(char) * PATH_MAX)) == NULL)
-		exit(EXIT_FAILURE);
-	if (!getcwd(str, PATH_MAX))
-	{
-		ft_printf("getcwd failed");
-		exit(EXIT_FAILURE);
-	}
-	return (str);
-}
 
 void init_root_static(void)
 {

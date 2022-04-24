@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:16:01 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 21:43:03 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 01:54:49 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,6 @@ int ftp_cli_cmd_help(t_cli_ftp *cli_ftp, const char *args)
 {
 	(void)args;
 	(void)cli_ftp;
-	ft_printf("ls,cd,get,put,pwd,quit,help\n");
+	ft_printf("lls,lcd,lpwd,ls,cd,get,put,pwd,quit,help\n");
 	return 1;
 }

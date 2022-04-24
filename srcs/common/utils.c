@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/17 16:48:18 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/22 21:39:55 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 01:51:32 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,4 +78,18 @@ struct in_addr stoaddr(in_addr_t s_addr)
 
 	addr.s_addr = s_addr;
 	return (addr);
+}
+
+char *ft_getcwd(void)
+{
+	char *str;
+
+	if ((str = (char *)malloc(sizeof(char) * PATH_MAX)) == NULL)
+		exit(EXIT_FAILURE);
+	if (!getcwd(str, PATH_MAX))
+	{
+		ft_printf("getcwd failed");
+		exit(EXIT_FAILURE);
+	}
+	return (str);
 }

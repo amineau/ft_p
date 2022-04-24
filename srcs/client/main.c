@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 21:39:15 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 01:59:56 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,10 @@ void ftp_free_ssl(t_cli_ftp *cli_ftp)
 
 int user_parser(t_cli_ftp *cli_ftp, t_client_verbs *cv)
 {
-	t_client_action cmd_builtin[] = {ftp_cli_cmd_list,
+	t_client_action cmd_builtin[] = {ftp_cli_cmd_local_list,
+									 ftp_cli_cmd_local_change_directory,
+									 ftp_cli_cmd_local_print_directory,
+									 ftp_cli_cmd_list,
 									 ftp_cli_cmd_change_workdir,
 									 ftp_cli_cmd_get_file,
 									 ftp_cli_cmd_put_file,
