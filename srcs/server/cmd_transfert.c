@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 17:59:41 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 19:16:09 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,8 @@ char *get_local_ip(char *interface)
 
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
 		error_print_exit(EXIT_FAILURE, "Create socket failed");
-	bzero(&req, sizeof(struct ifreq));
-	strcpy(req.ifr_name, interface);
+	ft_bzero(&req, sizeof(struct ifreq));
+	ft_strcpy(req.ifr_name, interface);
 	if (ioctl(sockfd, SIOCGIFADDR, &req) == -1)
 		error_print_exit(EXIT_FAILURE, "Get local ip failed");
 	struct sockaddr_in *host = (struct sockaddr_in *)&req.ifr_addr;

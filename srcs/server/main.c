@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 17:46:06 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 19:59:32 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,18 @@ void listen_clients(int sock, SSL_CTX *ctx, char *interface)
 	}
 }
 
+t_bool is_interface_online(char *interface)
+{
+	int          sockfd;
+	struct ifreq ifr;
+
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+		error_print_exit(EXIT_FAILURE, "Create socket failed");
+	ft_bzero(&ifr, sizeof(struct ifreq));
+	ft_strcpy(ifr.ifr_name, interface);
+	return (ioctl(sockfd, SIOCGIFADDR, &ifr) != -1);
+}
+
 void getargs(int ac, char **av, t_server_args *sa)
 {
 	char opt;
@@ -141,7 +153,12 @@ void getargs(int ac, char **av, t_server_args *sa)
 		else if (opt == 'd')
 			sa->sa_debug = true;
 		else if (opt == 'i')
-			sa->sa_interface = av[optind];
+		{
+			if (is_interface_online(av[optind]))
+				sa->sa_interface = av[optind];
+			else
+				error_print_exit(EXIT_FAILURE, "Interface is offline");
+		}
 		else
 			usage(av[0]);
 	}
