@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:41:44 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:23:43 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,15 @@
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <netdb.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <signal.h>
+#include <stdio.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #define MAX_PENDING_CONNECTIONS 2
 #define MAX_CLIENT_CONNECTION   2
@@ -140,19 +144,12 @@ typedef enum e_state
 	NEG_DEF
 } t_state;
 
-typedef struct s_client_verbs
-{
-	char *cv_verb;
-	char *cv_arg;
-	int   cv_code;
-} t_client_verbs;
-
-typedef struct s_server_verbs
+typedef struct s_srv_res
 {
 	t_ftp_code_enum sr_code;
 	t_state         sr_state;
 	char           *user_info;
-} t_server_verbs;
+} t_srv_res;
 
 extern t_bool debug;
 
@@ -181,10 +178,13 @@ SSL     *ftp_create_ssl(int sock, SSL_CTX *ctx);
 void     ftp_connect_ssl(SSL *ssl);
 void     ftp_accept_ssl(SSL *ssl);
 
-t_state         ftp_get_state_code(char *code);
+t_state         ftp_get_state_code(t_ftp_code_enum code);
 int             ftp_is_valid_response_code(char *code);
-t_ftp_code_enum ftp_get_ftp_code_enum(const char *code);
+t_ftp_code_enum ftp_get_code_enum(const char *code);
 struct in_addr  htoaddr(char *name);
 struct in_addr  stoaddr(in_addr_t s_addr);
+
+// move to ftp_server.h
+t_srv_res ftp_build_srv_res(t_ftp_code_enum code, char *user_info);
 
 #endif

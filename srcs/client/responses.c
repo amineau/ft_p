@@ -6,18 +6,18 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/20 23:50:22 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ftp_client.h"
 #include "ftp_srv_cmd_static.h"
 
-t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
+t_srv_res *listen_server(t_cli_ftp *cli_ftp)
 {
-	int             ret;
-	char           *buff;
-	t_server_verbs *srv_verbs;
+	int        ret;
+	char      *buff;
+	t_srv_res *srv_verbs;
 
 	srv_verbs = NULL;
 	while (!srv_verbs &&
@@ -37,9 +37,9 @@ t_server_verbs *listen_server(t_cli_ftp *cli_ftp)
 	return (srv_verbs);
 }
 
-t_server_verbs *ftp_wait_for_response(t_cli_ftp *cli_ftp)
+t_srv_res *ftp_wait_for_response(t_cli_ftp *cli_ftp)
 {
-	t_server_verbs *srv_verbs;
+	t_srv_res *srv_verbs;
 
 	if ((srv_verbs = listen_server(cli_ftp)))
 		return srv_verbs;

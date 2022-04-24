@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/17 16:48:18 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 01:51:32 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:21:51 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,17 +31,17 @@ int ftp_is_valid_response_code(char *code)
 	return 0;
 }
 
-t_state ftp_get_state_code(char *code)
+t_state ftp_get_state_code(t_ftp_code_enum code)
 {
-	return code[0] - '0';
+	return code_str[code][0] - '0';
 }
 
-t_ftp_code_enum ftp_get_ftp_code_enum(const char *code)
+t_ftp_code_enum ftp_get_code_enum(const char *code)
 {
 	int i;
 
 	i = 0;
-	while (g_ftp_code_str[i] && ft_strcmp(g_ftp_code_str[i], code))
+	while (code_str[i] && ft_strcmp(code_str[i], code))
 		i++;
 	return i;
 }
@@ -92,4 +92,13 @@ char *ft_getcwd(void)
 		exit(EXIT_FAILURE);
 	}
 	return (str);
+}
+
+t_srv_res ftp_build_srv_res(t_ftp_code_enum code, char *user_info)
+{
+	t_srv_res response;
+
+	response.sr_code = code;
+	response.user_info = user_info;
+	return response;
 }

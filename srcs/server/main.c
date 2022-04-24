@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:25:47 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,37 +21,31 @@ void usage(char *str)
 	;
 }
 
-t_server_verbs ftp_lexer(const char *buff, t_client_verbs *cv)
+t_srv_res ftp_lexer(const char *buff, t_cli_req *req)
 {
-	char		 **split;
-	int            code_command;
-	t_server_verbs sv;
+	char    **split;
+	int       code_command;
+	char     *verb;
+	t_srv_res response;
 
 	split = ft_strsplit(buff, ' ');
-	cv->cv_verb = ft_strrtrim(split[0]);
+	verb = ft_strrtrim(split[0]);
 	if (debug)
 	{
-		if (!ft_strcmp(cv->cv_verb, cmd_str[PASSWORD]))
-			ft_printf("\033[0;34mUSER-PI: %s ****\n\033[0m", cv->cv_verb);
+		if (!ft_strcmp(verb, cmd_str[PASSWORD]))
+			ft_printf("\033[0;34mUSER-PI: %s ****\n\033[0m", verb);
 		else
 			ft_printf("\033[0;34mUSER-PI: %s\033[0m\n", buff);
 	}
-	if (!cv->cv_verb || (code_command = ft_arraystr(cmd_str, cv->cv_verb)) == -1)
-	{
-		sv.sr_code = _500;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Unknown command";
-		return (sv);
-	}
-	cv->cv_arg = ft_strrtrim(split[1]);
-	cv->cv_code = code_command;
-	sv.sr_code = _100;
-	sv.sr_state = POS_TMP;
-	sv.user_info = "";
-	return (sv);
+	if (!verb || (code_command = ft_arraystr(cmd_str, verb)) == -1)
+		return (ftp_build_srv_res(_500, "Unknown command"));
+	req->req_arg = ft_strrtrim(split[1]);
+	req->req_code = (t_cmd)code_command;
+	response = ftp_build_srv_res(_100, "");
+	return (response);
 }
 
-t_server_verbs ftp_parser(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res ftp_parser(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_server_action cmd_builtin[] = {
 		[USERNAME] = cmd_username,
@@ -80,7 +74,7 @@ t_server_verbs ftp_parser(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 		[NOOP] = cmd_noop,
 		NULL,
 	};
-	return (cmd_builtin[cv->cv_code](cv, srv_ftp));
+	return (cmd_builtin[req->req_code](req, srv_ftp));
 }
 
 t_srv_ftp *ftp_srv_ftp_init()
@@ -98,28 +92,12 @@ t_srv_ftp *ftp_srv_ftp_init()
 	return (srv_ftp);
 }
 
-void ftp_connection_on_close(t_srv_ftp *srv_ftp)
-{
-	char str[INET_ADDRSTRLEN];
-
-	inet_ntop(AF_INET, &(srv_ftp->pi.sin.sin_addr), str, INET_ADDRSTRLEN);
-	ft_printf("Disconnect from %s:%d\n", str, ntohs(srv_ftp->pi.sin.sin_port));
-	if (srv_ftp->pi.ssl)
-		shutdown_ssl(srv_ftp->pi.ssl);
-	if (srv_ftp->dtp.ssl)
-		shutdown_ssl(srv_ftp->dtp.ssl);
-	close(srv_ftp->pi.cs);
-	if (srv_ftp->dtp.cs)
-		close(srv_ftp->dtp.cs);
-	free(srv_ftp);
-}
-
 void listen_clients(int sock, SSL_CTX *ctx)
 {
-	char          *buff;
-	t_client_verbs cv;
-	t_server_verbs sv;
-	t_srv_ftp     *srv_ftp;
+	char      *buff;
+	t_cli_req  req;
+	t_srv_res  response;
+	t_srv_ftp *srv_ftp;
 
 	while (1)
 	{
@@ -134,12 +112,13 @@ void listen_clients(int sock, SSL_CTX *ctx)
 									 &buff,
 									 FTP_EOC) > 0)
 		{
-			sv = ftp_lexer(buff, &cv);
-			if (sv.sr_state == POS_TMP)
-				sv = ftp_parser(&cv, srv_ftp);
-			ftp_srv_send_pi(&srv_ftp->pi, sv.sr_code, sv.user_info);
+			response = ftp_lexer(buff, &req);
+			if (ftp_get_state_code(response.sr_code) == POS_TMP)
+				response = ftp_parser(&req, srv_ftp);
+			ftp_srv_send_pi(&srv_ftp->pi, response.sr_code, response.user_info);
 		}
-		ftp_connection_on_close(srv_ftp);
+		ftp_close_connection(&srv_ftp->pi);
+		free(srv_ftp);
 	}
 }
 
@@ -152,7 +131,7 @@ void getargs(int ac, char **av, t_server_args *sa)
 	sa->sa_port = htons(ft_atoi(av[1]));
 	sa->sa_root = ft_getcwd();
 	sa->sa_debug = false;
-	while ((opt = (char)getopt(ac, av, "rd")) != -1)
+	while ((opt = getopt(ac, av, "rd")) != -1)
 	{
 		if (opt == 'r')
 			sa->sa_root = av[optind];

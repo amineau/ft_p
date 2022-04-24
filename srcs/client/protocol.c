@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:17:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 void ftp_init_protocol(t_cli_ftp *cli_ftp)
 {
-	t_server_verbs *srv_verbs;
+	t_srv_res *srv_verbs;
 
 	while ((srv_verbs = ftp_wait_for_response(cli_ftp)))
-		if (srv_verbs->sr_state != POS_TMP)
+		if (ftp_get_state_code(srv_verbs->sr_code) != POS_TMP)
 			break;
-	if (srv_verbs->sr_state == POS_DEF)
+	if (ftp_get_state_code(srv_verbs->sr_code) == POS_DEF)
 		return;
-	else if (srv_verbs->sr_state == NEG_TMP)
+	else if (ftp_get_state_code(srv_verbs->sr_code) == NEG_TMP)
 		exit(EXIT_FAILURE_RETRY);
 	exit(EXIT_FAILURE);
 }

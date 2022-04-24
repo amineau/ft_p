@@ -6,31 +6,29 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:25:47 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ftp_server.h"
 
-t_server_verbs cmd_port(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_port(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs sv;
-	int            i;
-	char		 **transfert_port_str;
+	t_srv_res response;
+	int       i;
+	char    **transfert_port_str;
 	// int             transfert_port[6];
 
 	(void)srv_ftp;
-	transfert_port_str = ft_strsplit(cv->cv_arg, ',');
+	transfert_port_str = ft_strsplit(req->req_arg, ',');
 	i = 0;
 	while (transfert_port_str[i])
 	{
 		// transfert_port[i] = ft_atoi(transfert_port_str[i]);
 		i++;
 	}
-	sv.sr_code = _200;
-	sv.sr_state = POS_INT;
-	sv.user_info = "Ok";
-	return (sv);
+	response = ftp_build_srv_res(_200, "Ok");
+	return (response);
 }
 
 char *addrtostr(in_addr_t s_addr)
@@ -105,14 +103,14 @@ int ftp_create_channel(int port)
 	return (sock);
 }
 
-t_server_verbs cmd_passive_mode(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs sv;
-	socklen_t      sinlen;
-	char          *port;
-	char          *addr;
+	t_srv_res response;
+	socklen_t sinlen;
+	char     *port;
+	char     *addr;
 
-	(void)cv;
+	(void)req;
 	srv_ftp->dtp.sin = ftp_get_socket_address(srv_ftp->pi.sin.sin_addr, htons(0));
 	srv_ftp->dtp.sock = ftp_create_socket();
 	ftp_bind_socket(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
@@ -121,21 +119,15 @@ t_server_verbs cmd_passive_mode(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	sinlen = sizeof(srv_ftp->dtp.sin);
 	if (getsockname(
 			srv_ftp->dtp.sock, (struct sockaddr *)&srv_ftp->dtp.sin, &sinlen) != 0)
-	{
-		sv.sr_code = _421;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Cannot open data connection.";
-		return (sv);
-	}
+		return (ftp_build_srv_res(_421, "Cannot open data connection."));
 	addr = addrtostr(srv_ftp->dtp.sin.sin_addr.s_addr);
 	port = porttostr(srv_ftp->dtp.sin.sin_port);
-	sv.sr_code = _227;
-	sv.sr_state = POS_INT;
-	sv.user_info =
+	response = ftp_build_srv_res(
+		_227,
 		ft_arrayjoin((char *[]){"Entering Passive Mode. ",
 								ft_arraycjoin((char *[]){addr, port, NULL}, ','),
-								NULL});
+								NULL}));
 	free(port);
 	free(addr);
-	return (sv);
+	return (response);
 }

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 13:16:54 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void getargs(int ac, char **av, struct s_client_args *ca)
 	ca->ca_port = htons(21);
 	ca->ca_user = ANONYMOUS_USER;
 	ca->ca_pass = NULL;
-	while ((opt = (char)getopt(ac, av, "hpuwd")) != -1)
+	while ((opt = getopt(ac, av, "hpuwd")) != -1)
 	{
 		if (opt == 'h')
 			ca->ca_host = htoaddr(av[optind]);
@@ -59,19 +59,20 @@ void ftp_free_ssl(t_cli_ftp *cli_ftp)
 		close(cli_ftp->pi.sock);
 }
 
-int user_parser(t_cli_ftp *cli_ftp, t_client_verbs *cv)
+int user_parser(t_cli_ftp *cli_ftp, t_user_verbs *uv)
 {
-	t_client_action cmd_builtin[] = {ftp_cli_cmd_local_list,
-									 ftp_cli_cmd_local_change_directory,
-									 ftp_cli_cmd_local_print_directory,
-									 ftp_cli_cmd_list,
-									 ftp_cli_cmd_change_workdir,
-									 ftp_cli_cmd_get_file,
-									 ftp_cli_cmd_put_file,
-									 ftp_cli_cmd_print_workdir,
-									 ftp_cli_cmd_logout,
-									 ftp_cli_cmd_help};
-	return (cmd_builtin[cv->cv_code](cli_ftp, cv->cv_arg));
+	t_client_action cmd_builtin[] = {[LLS] = ftp_cli_cmd_local_list,
+									 [LCD] = ftp_cli_cmd_local_change_directory,
+									 [LPWD] = ftp_cli_cmd_local_print_directory,
+									 [LS] = ftp_cli_cmd_list,
+									 [CD] = ftp_cli_cmd_change_workdir,
+									 [GET] = ftp_cli_cmd_get_file,
+									 [PUT] = ftp_cli_cmd_put_file,
+									 [PWD] = ftp_cli_cmd_print_workdir,
+									 [QUIT] = ftp_cli_cmd_logout,
+									 [HELP] = ftp_cli_cmd_help,
+									 NULL};
+	return (cmd_builtin[uv->uv_code](cli_ftp, uv->uv_arg));
 }
 
 t_cli_ftp *ftp_cli_ftp_init()
@@ -97,19 +98,19 @@ void ftp_print_prompt(char *user, char *pwd)
 
 void ftp_listen_user(t_cli_ftp *cli_ftp, char *user)
 {
-	t_client_verbs *cv;
-	char           *buff;
+	t_user_verbs *uv;
+	char		 *buff;
 
 	ftp_print_prompt(user, cli_ftp->pwd);
 	while (get_next_line(STDIN_FILENO, &buff) > 0)
 	{
-		if (!(cv = ftp_cli_user_lexer(buff)))
+		if (!(uv = ftp_cli_user_lexer(buff)))
 		{
 			ftp_print_prompt(user, cli_ftp->pwd);
 			continue;
 		}
-		user_parser(cli_ftp, cv);
-		free(cv);
+		user_parser(cli_ftp, uv);
+		free(uv);
 		ftp_print_prompt(user, cli_ftp->pwd);
 	}
 }

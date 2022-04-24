@@ -7,7 +7,7 @@ SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c \
 			  server/responses.c server/get_dir.c common/utils.c \
 			  server/cmd_files_management.c server/cmd_transfert.c \
 			  common/openssl.c common/read_sock.c common/socket.c \
-			  common/error.c
+			  common/error.c server/close.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
 CLIENT_SRCS = client/main.c common/openssl.c \
@@ -29,8 +29,8 @@ LFTHPATH = $(LFTPATH)/includes
 
 CFLAGS = -Wall -Wextra -Werror -g
 IFLAGS = -I./$(HPATH) -I./$(LFTHPATH)
-LIBS   = -L./$(LFTPATH) -lprt -lpam -lpam_misc -lssl -lcrypto
-
+CLIENT_LIBS = -L./$(LFTPATH) -lprt -lssl -lcrypto
+SERVER_LIBS = -L./$(LFTPATH) -lprt -lpam -lpam_misc -lssl -lcrypto
 
 INC = $(addprefix $(HPATH)/,$(INCS))
 SRC = $(addprefix $(SPATH)/,$(SRCS))
@@ -53,7 +53,7 @@ all: $(OPATH) $(INC) $(SERVER_NAME) $(CLIENT_NAME)
 $(SERVER_NAME): $(SERVER_OBJ)
 		@echo "$(YELLOW)Compilation Libft$(WHITE)"
 		@make -C $(LFTPATH)
-		@$(CC) -o $@ $^ $(LIBS) \
+		@$(CC) -o $@ $^ $(SERVER_LIBS) \
 		&& printf "$(YELLOW)%-30s$(DARK)-->>\t$(GREEN)$@$(WHITE)\n" "Compilation"\
 		|| (printf "$(YELLOW)%-30s$(DARK)-->>\t$(RED)$@$(WHITE)\n" "Compilation" \
 		&& exit 1)
@@ -62,7 +62,7 @@ $(SERVER_NAME): $(SERVER_OBJ)
 $(CLIENT_NAME): $(CLIENT_OBJ)
 		@echo "$(YELLOW)Compilation Libft$(WHITE)"
 		@make -C $(LFTPATH)
-		@$(CC) -o $@ $^ $(LIBS) \
+		@$(CC) -o $@ $^ $(CLIENT_LIBS) \
 		&& printf "$(YELLOW)%-30s$(DARK)-->>\t$(GREEN)$@$(WHITE)\n" "Compilation"\
 		|| (printf "$(YELLOW)%-30s$(DARK)-->>\t$(RED)$@$(WHITE)\n" "Compilation" \
 		&& exit 1)

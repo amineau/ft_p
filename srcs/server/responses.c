@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:26:15 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
 
 	if (code == _NOCODE)
 		return 0;
-	str = ft_straddc(g_ftp_code_str[code], ' ');
+	str = ft_straddc(code_str[code], ' ');
 	str = ft_strcln1join(ft_strcln1join(str, description), FTP_EOC);
 	if (debug == true)
 		ft_printf("\033[0;32mSERVER-PI: %s\033[0m", str);

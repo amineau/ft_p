@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 02:25:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:41:43 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,19 @@
 
 #include "ft_p.h"
 
+typedef enum e_user_cmd
+{
+	LLS,
+	LCD,
+	LPWD,
+	LS,
+	CD,
+	GET,
+	PUT,
+	PWD,
+	QUIT,
+	HELP,
+} t_user_cmd;
 typedef struct s_client_args
 {
 	struct in_addr ca_host;
@@ -23,6 +36,12 @@ typedef struct s_client_args
 	char          *ca_pass;
 	char          *ca_wdir;
 } t_client_args;
+
+typedef struct s_user_verbs
+{
+	t_user_cmd uv_code;
+	char      *uv_arg;
+} t_user_verbs;
 
 typedef struct s_cli_transfert
 {
@@ -63,9 +82,9 @@ void put_req_arg(t_cmd cmd);
 void put_no_req_arg(t_cmd cmd);
 
 int ftp_cli_send_pi(t_cli_ftp *cli_ftp, const char *cmd, const char *args);
-t_server_verbs *ftp_wait_for_response(t_cli_ftp *cli_ftp);
-t_server_verbs *ftp_cli_srv_lexer(char *str);
-t_client_verbs *ftp_cli_user_lexer(const char *str);
+t_srv_res    *ftp_wait_for_response(t_cli_ftp *cli_ftp);
+t_srv_res    *ftp_cli_srv_lexer(char *str);
+t_user_verbs *ftp_cli_user_lexer(const char *str);
 
 void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca);
 

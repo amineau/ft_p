@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:43:07 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,12 @@ in_port_t itoaport(int *numbers)
 
 int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 {
-	t_server_verbs *srv_verbs;
-	int            *numbers;
+	t_srv_res *srv_verbs;
+	int       *numbers;
 
 	ftp_cli_send_pi(cli_ftp, cmd_str[PASSIVE_MODE], NULL);
 	srv_verbs = ftp_wait_for_response(cli_ftp);
-	if (srv_verbs->sr_state == POS_DEF)
+	if (ftp_get_state_code(srv_verbs->sr_code) == POS_DEF)
 	{
 		numbers = get_numbers(get_last_word(srv_verbs->user_info));
 		if (numbers[0] == 6)
@@ -93,7 +93,7 @@ int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 		else
 			error_print_exit(EXIT_FAILURE, "Unable to parse response server");
 	}
-	else if (srv_verbs->sr_state == NEG_TMP)
+	else if (ftp_get_state_code(srv_verbs->sr_code) == NEG_TMP)
 		exit(EXIT_FAILURE_RETRY);
 	else
 		exit(EXIT_FAILURE);

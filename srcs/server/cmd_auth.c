@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 14:31:29 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,61 +46,42 @@ static int pamconv(int                        num_msg,
 	return PAM_SUCCESS;
 }
 
-t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_username(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs        sv;
+	t_srv_res             response;
 	const struct pam_conv conv = {&pamconv, NULL};
 
-	if (!ft_strcasecmp(cv->cv_arg, ANONYMOUS_USER))
-	{
-		sv.sr_code = _230;
-		sv.sr_state = POS_INT;
-		sv.user_info = "Loggin succeded";
-	}
-	else if (pam_start("common", cv->cv_arg, &conv, &srv_ftp->cv_pamh) ==
+	if (!ft_strcasecmp(req->req_arg, ANONYMOUS_USER))
+		response = ftp_build_srv_res(_230, "Loggin succeded");
+	else if (pam_start("common", req->req_arg, &conv, &srv_ftp->pamh) ==
 			 PAM_SUCCESS)
-	{
-		sv.sr_code = _331;
-		sv.sr_state = POS_INT;
-		sv.user_info = ft_strjoin("Password for ", cv->cv_arg);
-	}
+		response =
+			ftp_build_srv_res(_331, ft_strjoin("Password for ", req->req_arg));
 	else
-	{
-		sv.sr_code = _530;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Unknown user";
-	}
-	return (sv);
+		response = ftp_build_srv_res(_530, "Unknown user");
+	return (response);
 }
 
-t_server_verbs cmd_password(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_password(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs        sv;
+	t_srv_res             response;
 	int                   pam_status;
-	const struct pam_conv conv = {&pamconv, (void *)cv->cv_arg};
+	const struct pam_conv conv = {&pamconv, (void *)req->req_arg};
 
-	pam_set_item(srv_ftp->cv_pamh, PAM_CONV, (void *)&conv);
-	pam_status = pam_authenticate(srv_ftp->cv_pamh,
-								  PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	pam_set_item(srv_ftp->pamh, PAM_CONV, (void *)&conv);
+	pam_status =
+		pam_authenticate(srv_ftp->pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
 	if (pam_status == PAM_SUCCESS)
-	{
-		sv.sr_code = _230;
-		sv.sr_state = POS_INT;
-		sv.user_info = "Loggin succeded";
-	}
+		response = ftp_build_srv_res(_230, "Loggin succeded");
 	else
-	{
-		sv.sr_code = _530;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Incorrect password";
-	}
-	pam_end(srv_ftp->cv_pamh, pam_status);
-	return (sv);
+		response = ftp_build_srv_res(_530, "Incorrect password");
+	pam_end(srv_ftp->pamh, pam_status);
+	return (response);
 }
 
-t_server_verbs cmd_account(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_account(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	(void)cv;
+	(void)req;
 	return (cmd_not_implemented(ACCOUNT, srv_ftp));
 }
 
@@ -128,76 +109,55 @@ int wait_for_ssl_client(t_srv_ftp *srv_ftp)
 	return true;
 }
 
-t_server_verbs cmd_auth_method(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_auth_method(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs sv;
+	t_srv_res response;
 
-	if (!ft_strcmp(cv->cv_arg, "TLS"))
+	if (!ft_strcmp(req->req_arg, "TLS"))
 	{
 		if (wait_for_ssl_client(srv_ftp))
 		{
 			srv_ftp->pi.ssl_activated = true;
-			sv.sr_code = _NOCODE;
-			sv.sr_state = POS_DEF;
-			sv.user_info = "";
-			return (sv);
+			response = ftp_build_srv_res(_NOCODE, "");
 		}
 		else
 		{
 			// echec du serveur
 		}
 	}
-	sv.sr_code = _520;
-	sv.sr_state = NEG_DEF;
-	sv.user_info = "Not supported";
-	return (sv);
+	else
+		response = ftp_build_srv_res(_520, "Not supported");
+	return (response);
 }
 
-t_server_verbs cmd_protection_buffer_size(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_protection_buffer_size(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs sv;
+	t_srv_res response;
 
 	(void)srv_ftp;
-	if (!cv->cv_arg || !ft_isnumber(cv->cv_arg))
-	{
-		sv.sr_code = _501;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Syntax error in the arguments";
-	}
+	if (!req->req_arg || !ft_isnumber(req->req_arg))
+		response = ftp_build_srv_res(_501, "Syntax error in the arguments");
 	else
-	{
-		sv.sr_code = _200;
-		sv.sr_state = POS_DEF;
-		sv.user_info = "";
-	}
-	return (sv);
+		response = ftp_build_srv_res(_200, "");
+	return (response);
 }
 
-t_server_verbs cmd_protection(t_client_verbs *cv, t_srv_ftp *srv_ftp)
+t_srv_res cmd_protection(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_server_verbs sv;
-	char          *supported_params;
+	t_srv_res response;
+	char     *supported_params;
 
 	supported_params = "CP";
 
-	if (ft_strlen(cv->cv_arg) != 1 || !ft_strchr("CSEP", cv->cv_arg[0]))
-	{
-		sv.sr_code = _501;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Syntax error in the arguments";
-	}
-	else if (!ft_strchr(supported_params, cv->cv_arg[0]))
-	{
-		sv.sr_code = _536;
-		sv.sr_state = NEG_DEF;
-		sv.user_info = "Not suppoted param";
-	}
+	if (ft_strlen(req->req_arg) != 1 || !ft_strchr("CSEP", req->req_arg[0]))
+		response = ftp_build_srv_res(_501, "Syntax error in the arguments");
+
+	else if (!ft_strchr(supported_params, req->req_arg[0]))
+		response = ftp_build_srv_res(_536, "Not suppoted param");
 	else
 	{
 		srv_ftp->dtp.ssl_activated = true;
-		sv.sr_code = _200;
-		sv.sr_state = POS_DEF;
-		sv.user_info = "";
+		response = ftp_build_srv_res(_200, "");
 	}
-	return (sv);
+	return (response);
 }
