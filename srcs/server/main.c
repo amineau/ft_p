@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 01:33:26 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_server.h"
 #include "ftp_srv_cmd_static.h"
 
 t_bool debug;
@@ -143,7 +143,7 @@ void listen_clients(int sock, SSL_CTX *ctx)
 	}
 }
 
-void getargs(int ac, char **av, struct s_server_args *sa)
+void getargs(int ac, char **av, t_server_args *sa)
 {
 	char opt;
 

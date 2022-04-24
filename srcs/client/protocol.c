@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:17:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 20:27:47 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_client.h"
 
 void ftp_init_protocol(t_cli_ftp *cli_ftp)
 {

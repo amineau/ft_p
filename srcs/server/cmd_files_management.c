@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 01:10:31 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_server.h"
 
 t_server_verbs cmd_print_workdir(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 {

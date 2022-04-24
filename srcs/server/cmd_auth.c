@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 20:07:14 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_server.h"
 
 // TODO : Insert to libft
 void *ft_calloc(size_t n, size_t size)
@@ -51,14 +51,14 @@ t_server_verbs cmd_username(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	t_server_verbs        sv;
 	const struct pam_conv conv = {&pamconv, NULL};
 
-	(void)srv_ftp;
 	if (!ft_strcasecmp(cv->cv_arg, ANONYMOUS_USER))
 	{
 		sv.sr_code = _230;
 		sv.sr_state = POS_INT;
 		sv.user_info = "Loggin succeded";
 	}
-	else if (pam_start("common", cv->cv_arg, &conv, &cv->cv_pamh) == PAM_SUCCESS)
+	else if (pam_start("common", cv->cv_arg, &conv, &srv_ftp->cv_pamh) ==
+			 PAM_SUCCESS)
 	{
 		sv.sr_code = _331;
 		sv.sr_state = POS_INT;
@@ -79,10 +79,9 @@ t_server_verbs cmd_password(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 	int                   pam_status;
 	const struct pam_conv conv = {&pamconv, (void *)cv->cv_arg};
 
-	(void)srv_ftp;
-	pam_set_item(cv->cv_pamh, PAM_CONV, (void *)&conv);
-	pam_status =
-		pam_authenticate(cv->cv_pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	pam_set_item(srv_ftp->cv_pamh, PAM_CONV, (void *)&conv);
+	pam_status = pam_authenticate(srv_ftp->cv_pamh,
+								  PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
 	if (pam_status == PAM_SUCCESS)
 	{
 		sv.sr_code = _230;
@@ -95,7 +94,7 @@ t_server_verbs cmd_password(t_client_verbs *cv, t_srv_ftp *srv_ftp)
 		sv.sr_state = NEG_DEF;
 		sv.user_info = "Incorrect password";
 	}
-	pam_end(cv->cv_pamh, pam_status);
+	pam_end(srv_ftp->cv_pamh, pam_status);
 	return (sv);
 }
 
@@ -117,7 +116,6 @@ int wait_for_ssl_client(t_srv_ftp *srv_ftp)
 		if (SSL_accept(srv_ftp->pi.ssl) <= 0)
 		{
 			ft_printf("Warning: SSL failed\n");
-			ERR_print_errors_fp(stderr);
 			shutdown_ssl(srv_ftp->pi.ssl);
 			return false;
 		}

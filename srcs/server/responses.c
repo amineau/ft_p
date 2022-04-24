@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 00:55:20 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:16 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_server.h"
 #include "ftp_srv_code_static.h"
 
 int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
@@ -31,7 +31,6 @@ int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
 	else
 		ret = write(srv_tranfert->cs, str, ft_strlen(str));
 
-	ERR_print_errors_fp(stderr);
 	free(str);
 	return ret;
 }
@@ -46,7 +45,6 @@ int ftp_srv_send_dtp(t_srv_transfert *srv_tranfert, char *str)
 		ret = SSL_write(srv_tranfert->ssl, str, ft_strlen(str));
 	else
 		ret = write(srv_tranfert->cs, str, ft_strlen(str));
-	ERR_print_errors_fp(stderr);
 	return ret;
 }
 

@@ -19,7 +19,7 @@ CLIENT_SRCS = client/main.c common/openssl.c \
 
 DEBUGGER := gdb
 
-INCS = ft_p.h
+INCS = ft_p.h ftp_server.h ftp_client.h
 
 LFTPATH  = libft
 SPATH    = srcs

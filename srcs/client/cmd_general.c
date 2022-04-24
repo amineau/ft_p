@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:16:01 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 01:54:49 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_client.h"
 #include "ftp_srv_cmd_static.h"
 
 void put_req_arg(t_cmd cmd)

@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 01:39:42 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 02:08:15 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_client.h"
 // #include "ftp_user_cmd_static.h"
 
 int ftp_cli_cmd_local_change_directory(t_cli_ftp *cli_ftp, const char *dirname)

@@ -6,11 +6,11 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:43:07 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 17:27:40 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 02:42:34 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_p.h"
+#include "ftp_client.h"
 #include "ftp_srv_cmd_static.h"
 
 char *get_last_word(const char *str)
