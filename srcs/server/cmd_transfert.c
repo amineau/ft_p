@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:25:47 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 15:19:38 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,49 +60,6 @@ char *porttostr(in_port_t sin_port)
 	return str;
 }
 
-int ftp_create_sock(int port)
-{
-	int                sock;
-	struct protoent   *proto;
-	struct sockaddr_in sin;
-
-	proto = getprotobyname("tcp");
-	if (!proto)
-		exit(EXIT_FAILURE);
-	sock = socket(AF_INET, SOCK_STREAM, proto->p_proto);
-	ft_bzero((char *)&sin, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (const struct sockaddr *)&sin, sizeof(sin)) == -1)
-	{
-		if (errno == EACCES)
-			ft_printf("This address is protected\n");
-		else if (errno == EADDRINUSE)
-			ft_printf("This address is already in use\n");
-		else
-			ft_printf("Bind failed");
-		exit(EXIT_FAILURE);
-	}
-	return sock;
-}
-
-int ftp_create_channel(int port)
-{
-	int sock;
-
-	sock = ftp_create_sock(port);
-	if (listen(sock, MAX_PENDING_CONNECTIONS) == -1)
-	{
-		if (errno == ECONNREFUSED)
-			ft_printf("The queue is full");
-		else
-			ft_printf("Listen failed");
-		return (-1);
-	}
-	return (sock);
-}
-
 t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_srv_res response;
@@ -111,7 +68,7 @@ t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
 	char     *addr;
 
 	(void)req;
-	srv_ftp->dtp.sin = ftp_get_socket_address(srv_ftp->pi.sin.sin_addr, htons(0));
+	srv_ftp->dtp.sin = ftp_get_socket_address(stoaddr(htonl(INADDR_ANY)), 0);
 	srv_ftp->dtp.sock = ftp_create_socket();
 	ftp_bind_socket(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
 	ftp_listen_connection(srv_ftp->dtp.sock);
