@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 02:25:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:31:29 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 17:59:46 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 #define FTP_SERVER_H
 
 #include "ft_p.h"
+#include <net/if.h>
 #include <security/pam_appl.h>
+#include <sys/ioctl.h>
 
 typedef struct s_server_args
 {
 	in_port_t sa_port;
 	char     *sa_root;
+	char     *sa_interface;
 	t_bool    sa_debug;
 } t_server_args;
 
@@ -43,6 +46,7 @@ typedef struct s_srv_ftp
 	t_srv_transfert pi;
 	t_srv_transfert dtp;
 	SSL_CTX       **ctx;
+	char           *interface;
 	pam_handle_t   *pamh;
 } t_srv_ftp;
 

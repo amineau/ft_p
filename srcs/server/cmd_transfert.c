@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 15:19:38 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 17:59:41 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,12 +60,30 @@ char *porttostr(in_port_t sin_port)
 	return str;
 }
 
+char *get_local_ip(char *interface)
+{
+	char        *ip;
+	int          sockfd;
+	struct ifreq req;
+
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+		error_print_exit(EXIT_FAILURE, "Create socket failed");
+	bzero(&req, sizeof(struct ifreq));
+	strcpy(req.ifr_name, interface);
+	if (ioctl(sockfd, SIOCGIFADDR, &req) == -1)
+		error_print_exit(EXIT_FAILURE, "Get local ip failed");
+	struct sockaddr_in *host = (struct sockaddr_in *)&req.ifr_addr;
+	ip = addrtostr(host->sin_addr.s_addr);
+	close(sockfd);
+	return (ip);
+}
+
 t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_srv_res response;
 	socklen_t sinlen;
 	char     *port;
-	char     *addr;
+	char     *ip;
 
 	(void)req;
 	srv_ftp->dtp.sin = ftp_get_socket_address(stoaddr(htonl(INADDR_ANY)), 0);
@@ -77,14 +95,14 @@ t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
 	if (getsockname(
 			srv_ftp->dtp.sock, (struct sockaddr *)&srv_ftp->dtp.sin, &sinlen) != 0)
 		return (ftp_build_srv_res(_421, "Cannot open data connection."));
-	addr = addrtostr(srv_ftp->dtp.sin.sin_addr.s_addr);
+	ip = get_local_ip(srv_ftp->interface);
 	port = porttostr(srv_ftp->dtp.sin.sin_port);
 	response = ftp_build_srv_res(
 		_227,
 		ft_arrayjoin((char *[]){"Entering Passive Mode. ",
-								ft_arraycjoin((char *[]){addr, port, NULL}, ','),
+								ft_arraycjoin((char *[]){ip, port, NULL}, ','),
 								NULL}));
 	free(port);
-	free(addr);
+	free(ip);
 	return (response);
 }

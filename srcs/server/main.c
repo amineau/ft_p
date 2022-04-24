@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:25:47 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/24 17:46:06 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,9 @@ t_bool debug;
 
 void usage(char *str)
 {
-	ft_printf("Usage: %s <port> [-r <root directory>] [-d <debug>]\n", str);
-	;
+	ft_printf("Usage: %s <port> [-r <root directory>] [-d <debug>] [-i "
+			  "<interface>]\n",
+			  str);
 }
 
 t_srv_res ftp_lexer(const char *buff, t_cli_req *req)
@@ -92,7 +93,7 @@ t_srv_ftp *ftp_srv_ftp_init()
 	return (srv_ftp);
 }
 
-void listen_clients(int sock, SSL_CTX *ctx)
+void listen_clients(int sock, SSL_CTX *ctx, char *interface)
 {
 	char      *buff;
 	t_cli_req  req;
@@ -104,6 +105,7 @@ void listen_clients(int sock, SSL_CTX *ctx)
 		srv_ftp = ftp_srv_ftp_init();
 		srv_ftp->ctx = &ctx;
 		srv_ftp->pi.cs = ftp_accept_connection(sock, &srv_ftp->pi.sin);
+		srv_ftp->interface = interface;
 
 		ftp_srv_send_pi(&srv_ftp->pi, _220, "Server available for new user");
 		while (get_next_line_wrapper(srv_ftp->pi.cs,
@@ -130,13 +132,16 @@ void getargs(int ac, char **av, t_server_args *sa)
 		usage(av[0]);
 	sa->sa_port = htons(ft_atoi(av[1]));
 	sa->sa_root = ft_getcwd();
+	sa->sa_interface = "lo";
 	sa->sa_debug = false;
-	while ((opt = getopt(ac, av, "rd")) != -1)
+	while ((opt = getopt(ac, av, "rdi")) != -1)
 	{
 		if (opt == 'r')
 			sa->sa_root = av[optind];
 		else if (opt == 'd')
 			sa->sa_debug = true;
+		else if (opt == 'i')
+			sa->sa_interface = av[optind];
 		else
 			usage(av[0]);
 	}
@@ -157,7 +162,7 @@ void ftp_srv_user_prompt()
 	}
 }
 
-void ftp_srv_run(in_port_t port)
+void ftp_srv_run(in_port_t port, char *interface)
 {
 	int                i;
 	SSL_CTX           *ctx;
@@ -183,7 +188,7 @@ void ftp_srv_run(in_port_t port)
 		{
 			pids[i] = fork();
 			if (pids[i] == 0)
-				listen_clients(sock, ctx);
+				listen_clients(sock, ctx, interface);
 			i++;
 		}
 		ft_printf("Server started on port %d\n", ntohs(port));
@@ -235,6 +240,6 @@ int main(int ac, char **av)
 	getargs(ac, av, &sa);
 	ftp_set_debug(sa.sa_debug);
 	ftp_init_root_dir(sa.sa_root);
-	ftp_srv_run(sa.sa_port);
+	ftp_srv_run(sa.sa_port, sa.sa_interface);
 	return (EXIT_SUCCESS);
 }
