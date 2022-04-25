@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:25:47 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/25 09:08:36 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,7 @@ t_srv_res cmd_list(t_cli_req *req, t_srv_ftp *srv_ftp)
 
 	ftp_srv_send_pi(&srv_ftp->pi, _150, "");
 	args = NULL;
-	if (!ft_strcmp("-a", req->req_arg))
+	if (req->req_arg && !ft_strcmp("-a", req->req_arg))
 		args = "-a";
 	ftp_srv_pipe_dtp(&srv_ftp->dtp,
 					 "/bin/ls",
