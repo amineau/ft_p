@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/25 09:08:36 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/27 21:27:02 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@ t_srv_res cmd_print_workdir(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_srv_res response;
 	char     *wdir;
-	// char           buff[BUFF_SIZE];
 
 	(void)srv_ftp;
 	if (req->req_arg)
@@ -40,10 +39,10 @@ t_srv_res cmd_change_workdir(t_cli_req *req, t_srv_ftp *srv_ftp)
 	(void)srv_ftp;
 	if (req->req_arg)
 	{
-		if (!ftp_change_wdir(req->req_arg))
-			response = ftp_build_srv_res(_200, "Working directory changed");
-		else
+		if (ftp_change_wdir(req->req_arg) == -1)
 			response = ftp_build_srv_res(_431, "No such directory");
+		else
+			response = ftp_build_srv_res(_200, "Working directory changed");
 	}
 	else
 		response = ftp_build_srv_res(_504, "Command with param only");
@@ -85,23 +84,23 @@ t_srv_res cmd_retrieve(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_srv_res response;
 	int       fd;
-	char      buff[10];
+	char      buff[BUFF_SIZE];
 
-	if ((fd = open(req->req_arg, O_RDONLY)) == -1)
+	if ((fd = ftp_open_file(req->req_arg, O_RDONLY)) == -1)
 		return (ftp_build_srv_res(_421, "Failed to open file"));
 	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
-	if (srv_ftp->pi.ssl_activated)
+	if (srv_ftp->dtp.ssl_activated)
 	{
 		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
 		ftp_accept_ssl(srv_ftp->dtp.ssl);
 	}
 
-	ftp_srv_send_pi(&srv_ftp->pi, _150, "");
-	while (read(fd, buff, 10 - 1) > 0)
+	ftp_srv_response_pi(&srv_ftp->pi, _150, "");
+	while (read(fd, buff, BUFF_SIZE - 1) > 0)
 	{
-		buff[10 - 1] = '\0';
-		ftp_srv_send_dtp(&srv_ftp->dtp, buff);
-		ft_bzero(buff, 10);
+		buff[BUFF_SIZE - 1] = '\0';
+		ftp_srv_response_dtp(&srv_ftp->dtp, buff);
+		ft_bzero(buff, BUFF_SIZE);
 	}
 	response = ftp_build_srv_res(_226, "");
 	close(fd);
@@ -154,7 +153,7 @@ t_srv_res cmd_list(t_cli_req *req, t_srv_ftp *srv_ftp)
 	char     *args;
 
 	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
-	if (srv_ftp->pi.ssl_activated)
+	if (srv_ftp->dtp.ssl_activated)
 	{
 		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
 		ftp_accept_ssl(srv_ftp->dtp.ssl);
@@ -163,7 +162,7 @@ t_srv_res cmd_list(t_cli_req *req, t_srv_ftp *srv_ftp)
 	if ((dp = opendir(cwd)) == NULL)
 		return (ftp_build_srv_res(_421, "Failed to open working dir"));
 
-	ftp_srv_send_pi(&srv_ftp->pi, _150, "");
+	ftp_srv_response_pi(&srv_ftp->pi, _150, "");
 	args = NULL;
 	if (req->req_arg && !ft_strcmp("-a", req->req_arg))
 		args = "-a";
@@ -186,5 +185,6 @@ t_srv_res cmd_system(t_cli_req *req, t_srv_ftp *srv_ftp)
 t_srv_res cmd_noop(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	(void)req;
-	return (cmd_not_implemented(NOOP, srv_ftp));
+	(void)srv_ftp;
+	return (ftp_build_srv_res(_200, "Ok"));
 }

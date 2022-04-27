@@ -6,16 +6,16 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:26:15 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/25 13:37:18 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ftp_server.h"
 #include "ftp_srv_code_static.h"
 
-int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
-					t_ftp_code_enum  code,
-					char            *description)
+int ftp_srv_response_pi(t_srv_transfert *srv_tranfert,
+						t_ftp_code_enum  code,
+						char            *description)
 {
 	char *str;
 	int   ret;
@@ -35,7 +35,7 @@ int ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
 	return ret;
 }
 
-int ftp_srv_send_dtp(t_srv_transfert *srv_tranfert, char *str)
+int ftp_srv_response_dtp(t_srv_transfert *srv_tranfert, char *str)
 {
 	int ret;
 
@@ -56,7 +56,7 @@ void ftp_srv_pipe_dtp_read(t_srv_transfert *srv_tranfert, int pfd)
 	while ((r = read(pfd, buffer, BUFF_SIZE_DATA_READ)) != 0)
 	{
 		buffer[r] = '\0';
-		ftp_srv_send_dtp(srv_tranfert, buffer);
+		ftp_srv_response_dtp(srv_tranfert, buffer);
 	}
 }
 

@@ -4,7 +4,7 @@ CLIENT_NAME = client
 CC = gcc
 
 SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c \
-			  server/responses.c server/get_dir.c common/utils.c \
+			  server/responses.c server/path_utils.c common/utils.c \
 			  server/cmd_files_management.c server/cmd_transfert.c \
 			  common/openssl.c common/read_sock.c common/socket.c \
 			  common/error.c server/close.c

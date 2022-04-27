@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:31:29 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/26 13:37:57 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ t_srv_res cmd_username(t_cli_req *req, t_srv_ftp *srv_ftp)
 
 	if (!ft_strcasecmp(req->req_arg, ANONYMOUS_USER))
 		response = ftp_build_srv_res(_230, "Loggin succeded");
-	else if (pam_start("common", req->req_arg, &conv, &srv_ftp->pamh) ==
+	else if (pam_start("common", req->req_arg, &conv, &srv_ftp->conf.pamh) ==
 			 PAM_SUCCESS)
 		response =
 			ftp_build_srv_res(_331, ft_strjoin("Password for ", req->req_arg));
@@ -68,14 +68,14 @@ t_srv_res cmd_password(t_cli_req *req, t_srv_ftp *srv_ftp)
 	int                   pam_status;
 	const struct pam_conv conv = {&pamconv, (void *)req->req_arg};
 
-	pam_set_item(srv_ftp->pamh, PAM_CONV, (void *)&conv);
-	pam_status =
-		pam_authenticate(srv_ftp->pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	pam_set_item(srv_ftp->conf.pamh, PAM_CONV, (void *)&conv);
+	pam_status = pam_authenticate(srv_ftp->conf.pamh,
+								  PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
 	if (pam_status == PAM_SUCCESS)
 		response = ftp_build_srv_res(_230, "Loggin succeded");
 	else
 		response = ftp_build_srv_res(_530, "Incorrect password");
-	pam_end(srv_ftp->pamh, pam_status);
+	pam_end(srv_ftp->conf.pamh, pam_status);
 	return (response);
 }
 
@@ -103,7 +103,7 @@ int wait_for_ssl_client(t_srv_ftp *srv_ftp)
 	}
 	else
 	{
-		ftp_srv_send_pi(&srv_ftp->pi, _234, "");
+		ftp_srv_response_pi(&srv_ftp->pi, _234, "");
 		exit(EXIT_SUCCESS);
 	}
 	return true;

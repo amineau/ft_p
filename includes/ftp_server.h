@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 02:25:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 17:59:46 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/26 13:38:24 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,18 @@ typedef struct s_srv_transfert
 	t_bool             ssl_activated;
 } t_srv_transfert;
 
+typedef struct s_cli_conf
+{
+	pam_handle_t *pamh;
+} t_cli_conf;
+
 typedef struct s_srv_ftp
 {
 	t_srv_transfert pi;
 	t_srv_transfert dtp;
 	SSL_CTX       **ctx;
 	char           *interface;
-	pam_handle_t   *pamh;
+	t_cli_conf      conf;
 } t_srv_ftp;
 
 typedef t_srv_res (*t_server_action)(t_cli_req *, t_srv_ftp *);
@@ -56,6 +61,7 @@ char *get_root(void);
 void  init_root_static(void);
 char *get_wdir(void);
 int   ftp_change_wdir(const char *dir);
+int   ftp_open_file(const char *pathname, int flags);
 
 void ftp_close_connection(t_srv_transfert *srv_transfert);
 
@@ -85,10 +91,10 @@ t_srv_res cmd_protection_buffer_size(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_protection(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_noop(t_cli_req *req, t_srv_ftp *srv_ftp);
 
-int  ftp_srv_send_pi(t_srv_transfert *srv_tranfert,
-					 t_ftp_code_enum  code,
-					 char            *description);
-int  ftp_srv_send_dtp(t_srv_transfert *srv_tranfert, char *data);
+int  ftp_srv_response_pi(t_srv_transfert *srv_tranfert,
+						 t_ftp_code_enum  code,
+						 char            *description);
+int  ftp_srv_response_dtp(t_srv_transfert *srv_tranfert, char *data);
 void ftp_srv_pipe_dtp(t_srv_transfert *srv_tranfert,
 					  const char      *path,
 					  char *const      argv[]);

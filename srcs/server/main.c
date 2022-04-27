@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 19:59:32 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/25 13:37:15 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,7 @@ void listen_clients(int sock, SSL_CTX *ctx, char *interface)
 		srv_ftp->pi.cs = ftp_accept_connection(sock, &srv_ftp->pi.sin);
 		srv_ftp->interface = interface;
 
-		ftp_srv_send_pi(&srv_ftp->pi, _220, "Server available for new user");
+		ftp_srv_response_pi(&srv_ftp->pi, _220, "Server available for new user");
 		while (get_next_line_wrapper(srv_ftp->pi.cs,
 									 srv_ftp->pi.ssl,
 									 srv_ftp->pi.ssl_activated,
@@ -117,7 +117,8 @@ void listen_clients(int sock, SSL_CTX *ctx, char *interface)
 			response = ftp_lexer(buff, &req);
 			if (ftp_get_state_code(response.sr_code) == POS_TMP)
 				response = ftp_parser(&req, srv_ftp);
-			ftp_srv_send_pi(&srv_ftp->pi, response.sr_code, response.user_info);
+			ftp_srv_response_pi(
+				&srv_ftp->pi, response.sr_code, response.user_info);
 		}
 		ftp_close_connection(&srv_ftp->pi);
 		free(srv_ftp);
