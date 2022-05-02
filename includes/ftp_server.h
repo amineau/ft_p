@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 02:25:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/26 13:38:24 by amineau          ###   ########.fr       */
+/*   Updated: 2022/05/02 20:19:17 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,7 @@
 #define FTP_SERVER_H
 
 #include "ft_p.h"
-#include <net/if.h>
 #include <security/pam_appl.h>
-#include <sys/ioctl.h>
 
 typedef struct s_server_args
 {
@@ -41,9 +39,49 @@ typedef struct s_srv_transfert
 	t_bool             ssl_activated;
 } t_srv_transfert;
 
+typedef enum e_repr
+{
+	ASCII,
+	EBCDIC,
+	IMAGE,
+	LOCAL
+} t_repr;
+
+typedef enum e_data_format
+{
+	NON_PRINT,
+	TELNET,
+	CARRIAGE_CONTROL
+} t_data_format;
+
+typedef enum e_file_struct
+{
+	FILE_STRUCT,
+	RECORD_STRUCT,
+	PAGE_STRUCT
+} t_file_struct;
+
+typedef enum e_transfert_mode
+{
+	STREAM,
+	BLOCK,
+	COMPRESSED
+} t_transfert_mode;
+
+typedef struct s_representation_type
+{
+	t_repr        type;
+	t_data_format format; // Only for ASCII and EBCDIC
+	size_t        size;   // Only for Local type
+} t_representation_type;
+
 typedef struct s_cli_conf
 {
-	pam_handle_t *pamh;
+	pam_handle_t         *pamh;
+	int                   passive;
+	t_representation_type repr;
+	t_transfert_mode      mode;
+	t_file_struct         file_struct;
 } t_cli_conf;
 
 typedef struct s_srv_ftp
@@ -74,7 +112,7 @@ t_srv_res cmd_change_workdir(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_change_to_parent_dir(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_logout(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_port(t_cli_req *req, t_srv_ftp *srv_ftp);
-t_srv_res cmd_passive_mode(t_cli_req *req, t_srv_ftp *srv_ftp);
+t_srv_res cmd_passive(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_representation_type(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_retrieve(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_store(t_cli_req *req, t_srv_ftp *srv_ftp);
@@ -89,6 +127,8 @@ t_srv_res cmd_list(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_system(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_protection_buffer_size(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_protection(t_cli_req *req, t_srv_ftp *srv_ftp);
+t_srv_res cmd_mode(t_cli_req *req, t_srv_ftp *srv_ftp);
+t_srv_res cmd_file_structure(t_cli_req *req, t_srv_ftp *srv_ftp);
 t_srv_res cmd_noop(t_cli_req *req, t_srv_ftp *srv_ftp);
 
 int  ftp_srv_response_pi(t_srv_transfert *srv_tranfert,

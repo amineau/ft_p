@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/16 16:07:54 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/26 13:37:57 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/30 11:41:30 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,12 @@ static int pamconv(int                        num_msg,
 		resp[i++]->resp = pass;
 	}
 	return PAM_SUCCESS;
+}
+
+t_srv_res cmd_logout(t_cli_req *req, t_srv_ftp *srv_ftp)
+{
+	(void)req;
+	return (cmd_not_implemented(LOGOUT, srv_ftp));
 }
 
 t_srv_res cmd_username(t_cli_req *req, t_srv_ftp *srv_ftp)

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 05:56:41 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/27 21:26:22 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/30 10:20:41 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,22 +66,25 @@ t_bool has_valid_relative_path(const char *path)
 
 char *get_absolute_path(const char *path)
 {
-	char absolute_path[PATH_MAX];
+	char  absolute_path[PATH_MAX];
+	char *root_path;
 
+	root_path = get_root();
+	if (path[0] == '/')
+		path = ft_strjoin(root_path, path);
 	return realpath(path, absolute_path);
 }
 
 int ftp_change_wdir(const char *dir)
 {
 	if (has_valid_relative_path(dir))
-		return chdir(dir);
+		return chdir(get_absolute_path(dir));
 	return -1;
 }
 
 int ftp_open_file(const char *pathname, int flags)
 {
 	if (has_valid_relative_path(pathname))
-
 		return open(pathname, flags);
 	return -1;
 }

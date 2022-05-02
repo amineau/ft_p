@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:08:29 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 15:23:47 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/28 14:37:39 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ void ftp_connect_socket(int sock, struct sockaddr_in *sin)
 			err = "Remote address not listening";
 		else
 			err = "Connect failed";
+		printf("sock: %d\nerrno: %d\n", sock, errno);
 		error_print_exit(EXIT_FAILURE, err);
 	}
 }

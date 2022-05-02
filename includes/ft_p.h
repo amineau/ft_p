@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 20:07:43 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:23:43 by amineau          ###   ########.fr       */
+/*   Updated: 2022/05/02 20:06:58 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,8 @@ typedef enum e_cmd
 	SYSTEM,
 	PROTECTION_BUFFER_SIZE,
 	PROTECTION,
+	MODE,
+	STRUCTURE,
 	NOOP,
 } t_cmd;
 
@@ -183,6 +185,12 @@ int             ftp_is_valid_response_code(char *code);
 t_ftp_code_enum ftp_get_code_enum(const char *code);
 struct in_addr  htoaddr(char *name);
 struct in_addr  stoaddr(in_addr_t s_addr);
+
+in_addr_t itoaddr(int *numbers);
+in_port_t itoport(int *numbers);
+char	 *porttostr(in_port_t sin_port);
+char	 *get_local_ip(char *interface);
+t_bool    is_interface_online(char *interface);
 
 // move to ftp_server.h
 t_srv_res ftp_build_srv_res(t_ftp_code_enum code, char *user_info);

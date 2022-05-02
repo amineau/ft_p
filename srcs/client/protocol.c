@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:17:30 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/30 11:49:19 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,5 +36,5 @@ void ftp_cli_connection_protocol(t_cli_ftp *cli_ftp, t_client_args *ca)
 		ftp_cli_cmd_protection_buffer_size(cli_ftp);
 		ftp_cli_cmd_protection(cli_ftp);
 	}
-	ftp_cli_cmd_passive_mode(cli_ftp);
+	ftp_cli_cmd_passive(cli_ftp);
 }

@@ -7,7 +7,7 @@ SERVER_SRCS = server/main.c server/cmd_generic.c server/cmd_auth.c \
 			  server/responses.c server/path_utils.c common/utils.c \
 			  server/cmd_files_management.c server/cmd_transfert.c \
 			  common/openssl.c common/read_sock.c common/socket.c \
-			  common/error.c server/close.c
+			  common/error.c server/close.c common/addr_utils.c
 # ftp_action_2.c ftp_action_3.c \
 			  ftp_action_4.c
 CLIENT_SRCS = client/main.c common/openssl.c \
@@ -15,7 +15,7 @@ CLIENT_SRCS = client/main.c common/openssl.c \
 			  client/cmd_files_management.c client/responses.c \
 			  client/cmd_general.c client/lexer.c client/protocol.c \
 			  client/cmd_transfert.c common/socket.c common/error.c \
-			  client/cmd_local.c
+			  client/cmd_local.c common/addr_utils.c
 
 DEBUGGER := gdb
 

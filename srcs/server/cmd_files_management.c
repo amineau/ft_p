@@ -6,11 +6,28 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/17 04:42:08 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/27 21:27:02 by amineau          ###   ########.fr       */
+/*   Updated: 2022/05/02 20:21:12 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ftp_server.h"
+
+void ftp_connect_dtp(t_srv_ftp *srv_ftp)
+{
+	if (srv_ftp->conf.passive == 1)
+		srv_ftp->dtp.cs =
+			ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
+	else
+	{
+		srv_ftp->dtp.cs = ftp_create_socket();
+		ftp_connect_socket(srv_ftp->dtp.cs, &srv_ftp->dtp.sin);
+	}
+	if (srv_ftp->dtp.ssl_activated)
+	{
+		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
+		ftp_accept_ssl(srv_ftp->dtp.ssl);
+	}
+}
 
 t_srv_res cmd_print_workdir(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
@@ -63,23 +80,91 @@ t_srv_res cmd_change_to_parent_dir(t_cli_req *req, t_srv_ftp *srv_ftp)
 	return response;
 }
 
-t_srv_res cmd_logout(t_cli_req *req, t_srv_ftp *srv_ftp)
+char *next_word(char *str)
 {
-	(void)req;
-	return (cmd_not_implemented(LOGOUT, srv_ftp));
+	while (*str && *str != ' ')
+		str++;
+	return str;
+}
+
+int ft_indexof(const char *str, char c)
+{
+	int i;
+
+	i = 0;
+	while (str && str[i] != c)
+		i++;
+	if (!str)
+		i = -1;
+	return (i);
 }
 
 t_srv_res cmd_representation_type(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
-	t_srv_res response;
+	int        ret;
+	char      *format_arg;
+	const char types[5] = {
+		[ASCII] = 'A', [EBCDIC] = 'E', [IMAGE] = 'I', [LOCAL] = 'L', 0};
+	const char formats[4] = {
+		[NON_PRINT] = 'N', [TELNET] = 'T', [CARRIAGE_CONTROL] = 'C', 0};
 
-	(void)srv_ftp;
-	if (!ft_strncasecmp(req->req_arg, "I", 1))
-		response = ftp_build_srv_res(_200, "");
+	ret = ft_indexof(types, ft_toupper(*req->req_arg));
+	if (ret == -1)
+		return (ftp_build_srv_res(_501, "Syntax error in the arguments"));
+	srv_ftp->conf.repr.type = (t_repr)ret;
+	if (srv_ftp->conf.repr.type == ASCII || srv_ftp->conf.repr.type == EBCDIC)
+	{
+		if ((format_arg = next_word(req->req_arg)))
+		{
+			ret = ft_indexof(formats, ft_toupper(*format_arg));
+			if (ret == -1)
+				return (ftp_build_srv_res(_501, "Syntax error in the arguments"));
+			srv_ftp->conf.repr.format = (t_data_format)ret;
+		}
+		else
+			srv_ftp->conf.repr.format = NON_PRINT;
+	}
+	else if (srv_ftp->conf.repr.type == LOCAL)
+		return (ftp_build_srv_res(_503, "Not implemented"));
+	return (ftp_build_srv_res(_200, ""));
+}
+
+t_srv_res cmd_mode(t_cli_req *req, t_srv_ftp *srv_ftp)
+{
+	const char modes[4] = {[STREAM] = 'S', [BLOCK] = 'B', [COMPRESSED] = 'C', 0};
+	t_srv_res  response;
+	int        ret;
+
+	ret = ft_indexof(modes, ft_toupper(*req->req_arg));
+	if (ret == -1)
+		return (ftp_build_srv_res(_501, "Syntax error in the arguments"));
+	srv_ftp->conf.mode = (t_transfert_mode)ret;
+	if (srv_ftp->conf.mode == BLOCK || srv_ftp->conf.mode == COMPRESSED)
+		response = ftp_build_srv_res(_503, "Not implemented");
 	else
-		response = ftp_build_srv_res(_504, "Not implemented");
+		response = ftp_build_srv_res(_200, "");
 	return (response);
 }
+
+t_srv_res cmd_file_structure(t_cli_req *req, t_srv_ftp *srv_ftp)
+{
+	const char structures[4] = {
+		[FILE_STRUCT] = 'F', [RECORD_STRUCT] = 'R', [PAGE_STRUCT] = 'P', 0};
+	t_srv_res response;
+	int       ret;
+
+	ret = ft_indexof(structures, ft_toupper(*req->req_arg));
+	if (ret == -1)
+		return (ftp_build_srv_res(_501, "Syntax error in the arguments"));
+	srv_ftp->conf.file_struct = (t_file_struct)ret;
+	if (srv_ftp->conf.file_struct == RECORD_STRUCT ||
+		srv_ftp->conf.file_struct == PAGE_STRUCT)
+		response = ftp_build_srv_res(_503, "Not implemented");
+	else
+		response = ftp_build_srv_res(_200, "");
+	return (response);
+}
+
 t_srv_res cmd_retrieve(t_cli_req *req, t_srv_ftp *srv_ftp)
 {
 	t_srv_res response;
@@ -88,13 +173,8 @@ t_srv_res cmd_retrieve(t_cli_req *req, t_srv_ftp *srv_ftp)
 
 	if ((fd = ftp_open_file(req->req_arg, O_RDONLY)) == -1)
 		return (ftp_build_srv_res(_421, "Failed to open file"));
-	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
-	if (srv_ftp->dtp.ssl_activated)
-	{
-		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
-		ftp_accept_ssl(srv_ftp->dtp.ssl);
-	}
 
+	ftp_connect_dtp(srv_ftp);
 	ftp_srv_response_pi(&srv_ftp->pi, _150, "");
 	while (read(fd, buff, BUFF_SIZE - 1) > 0)
 	{
@@ -152,12 +232,7 @@ t_srv_res cmd_list(t_cli_req *req, t_srv_ftp *srv_ftp)
 	char     *cwd;
 	char     *args;
 
-	srv_ftp->dtp.cs = ftp_accept_connection(srv_ftp->dtp.sock, &srv_ftp->dtp.sin);
-	if (srv_ftp->dtp.ssl_activated)
-	{
-		srv_ftp->dtp.ssl = ftp_create_ssl(srv_ftp->dtp.cs, *srv_ftp->ctx);
-		ftp_accept_ssl(srv_ftp->dtp.ssl);
-	}
+	ftp_connect_dtp(srv_ftp);
 	cwd = ft_getcwd();
 	if ((dp = opendir(cwd)) == NULL)
 		return (ftp_build_srv_res(_421, "Failed to open working dir"));

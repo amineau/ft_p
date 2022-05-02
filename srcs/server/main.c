@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/08/14 19:06:20 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/25 13:37:15 by amineau          ###   ########.fr       */
+/*   Updated: 2022/05/02 20:30:41 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,12 @@
 
 t_bool debug;
 
-void usage(char *str)
+void usage(char *str, int return_code)
 {
 	ft_printf("Usage: %s <port> [-r <root directory>] [-d <debug>] [-i "
 			  "<interface>]\n",
 			  str);
+	exit(return_code);
 }
 
 t_srv_res ftp_lexer(const char *buff, t_cli_req *req)
@@ -57,7 +58,7 @@ t_srv_res ftp_parser(t_cli_req *req, t_srv_ftp *srv_ftp)
 		[CHANGE_TO_PARENT_DIR] = cmd_change_to_parent_dir,
 		[LOGOUT] = cmd_logout,
 		[PORT] = cmd_port,
-		[PASSIVE_MODE] = cmd_passive_mode,
+		[PASSIVE_MODE] = cmd_passive,
 		[REPRESENTATION_TYPE] = cmd_representation_type,
 		[RETRIEVE] = cmd_retrieve,
 		[STORE] = cmd_store,
@@ -72,6 +73,8 @@ t_srv_res ftp_parser(t_cli_req *req, t_srv_ftp *srv_ftp)
 		[SYSTEM] = cmd_system,
 		[PROTECTION_BUFFER_SIZE] = cmd_protection_buffer_size,
 		[PROTECTION] = cmd_protection,
+		[MODE] = cmd_mode,
+		[STRUCTURE] = cmd_file_structure,
 		[NOOP] = cmd_noop,
 		NULL,
 	};
@@ -84,11 +87,18 @@ t_srv_ftp *ftp_srv_ftp_init()
 
 	srv_ftp = (t_srv_ftp *)malloc(sizeof(t_srv_ftp));
 	srv_ftp->ctx = NULL;
+	srv_ftp->conf.passive = -1;
+	srv_ftp->conf.pamh = NULL;
+	srv_ftp->conf.repr.type = ASCII;
+	srv_ftp->conf.repr.format = NON_PRINT;
+	srv_ftp->conf.repr.size = 0;
+	srv_ftp->conf.mode = STREAM;
+	srv_ftp->conf.file_struct = FILE_STRUCT;
 	srv_ftp->pi.cs = 0;
 	srv_ftp->pi.ssl = NULL;
+	srv_ftp->pi.ssl_activated = false;
 	srv_ftp->dtp.cs = 0;
 	srv_ftp->dtp.ssl = NULL;
-	srv_ftp->pi.ssl_activated = false;
 	srv_ftp->dtp.ssl_activated = false;
 	return (srv_ftp);
 }
@@ -125,29 +135,17 @@ void listen_clients(int sock, SSL_CTX *ctx, char *interface)
 	}
 }
 
-t_bool is_interface_online(char *interface)
-{
-	int          sockfd;
-	struct ifreq ifr;
-
-	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-		error_print_exit(EXIT_FAILURE, "Create socket failed");
-	ft_bzero(&ifr, sizeof(struct ifreq));
-	ft_strcpy(ifr.ifr_name, interface);
-	return (ioctl(sockfd, SIOCGIFADDR, &ifr) != -1);
-}
-
 void getargs(int ac, char **av, t_server_args *sa)
 {
 	char opt;
 
 	if (ac < 2)
-		usage(av[0]);
+		usage(av[0], EXIT_FAILURE);
 	sa->sa_port = htons(ft_atoi(av[1]));
 	sa->sa_root = ft_getcwd();
 	sa->sa_interface = "lo";
 	sa->sa_debug = false;
-	while ((opt = getopt(ac, av, "rdi")) != -1)
+	while ((opt = getopt(ac, av, "rdih")) != -1)
 	{
 		if (opt == 'r')
 			sa->sa_root = av[optind];
@@ -160,8 +158,10 @@ void getargs(int ac, char **av, t_server_args *sa)
 			else
 				error_print_exit(EXIT_FAILURE, "Interface is offline");
 		}
+		else if (opt == 'h')
+			usage(av[0], EXIT_SUCCESS);
 		else
-			usage(av[0]);
+			usage(av[0], EXIT_FAILURE);
 	}
 }
 
@@ -180,7 +180,29 @@ void ftp_srv_user_prompt()
 	}
 }
 
-void ftp_srv_run(in_port_t port, char *interface)
+void ftp_print_chdir_error(const char *path)
+{
+	if (errno == EACCES)
+		ft_printf("%s : Permission denied\n", path);
+	else if (errno == ENOTDIR)
+		ft_printf("%s : Not a directory\n", path);
+	else if (errno == ENOENT)
+		ft_printf("%s : No such file or directory\n", path);
+	else
+		ft_printf("chdir failed\n");
+}
+
+void ftp_init_root_dir(const char *rootpath)
+{
+	if (chdir(rootpath) == -1)
+	{
+		ftp_print_chdir_error(rootpath);
+		exit(EXIT_FAILURE);
+	}
+	init_root_static();
+}
+
+void ftp_srv_run(in_port_t port, char *root, char *interface)
 {
 	int                i;
 	SSL_CTX           *ctx;
@@ -192,6 +214,7 @@ void ftp_srv_run(in_port_t port, char *interface)
 
 	ctx = ftp_srv_create_context();
 	configure_context(ctx);
+	ftp_init_root_dir(root);
 
 	i = 0;
 	if ((pid = fork()) != 0)
@@ -224,28 +247,6 @@ void ftp_srv_run(in_port_t port, char *interface)
 		ftp_srv_user_prompt();
 }
 
-void ftp_print_chdir_error(const char *path)
-{
-	if (errno == EACCES)
-		ft_printf("%s : Permission denied\n", path);
-	else if (errno == ENOTDIR)
-		ft_printf("%s : Not a directory\n", path);
-	else if (errno == ENOENT)
-		ft_printf("%s : No such file or directory\n", path);
-	else
-		ft_printf("chdir failed\n");
-}
-
-void ftp_init_root_dir(const char *rootpath)
-{
-	if (chdir(rootpath) == -1)
-	{
-		ftp_print_chdir_error(rootpath);
-		exit(EXIT_FAILURE);
-	}
-	init_root_static();
-}
-
 void ftp_set_debug(t_bool sa_debug)
 {
 	debug = sa_debug;
@@ -257,7 +258,6 @@ int main(int ac, char **av)
 
 	getargs(ac, av, &sa);
 	ftp_set_debug(sa.sa_debug);
-	ftp_init_root_dir(sa.sa_root);
-	ftp_srv_run(sa.sa_port, sa.sa_interface);
+	ftp_srv_run(sa.sa_port, sa.sa_root, sa.sa_interface);
 	return (EXIT_SUCCESS);
 }

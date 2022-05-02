@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/21 00:43:07 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/24 14:20:59 by amineau          ###   ########.fr       */
+/*   Updated: 2022/04/30 11:49:19 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,18 +66,7 @@ int *get_numbers(const char *str)
 	return (numbers);
 }
 
-in_addr_t itoaddr(int *numbers)
-{
-	return (in_addr_t)((numbers[3] << 24) | (numbers[2] << 16) |
-					   (numbers[1] << 8) | numbers[0]);
-}
-
-in_port_t itoaport(int *numbers)
-{
-	return (in_port_t)((numbers[0] << 8) | numbers[1]);
-}
-
-int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
+int ftp_cli_cmd_passive(t_cli_ftp *cli_ftp)
 {
 	t_srv_res *srv_verbs;
 	int       *numbers;
@@ -89,7 +78,7 @@ int ftp_cli_cmd_passive_mode(t_cli_ftp *cli_ftp)
 		numbers = get_numbers(get_last_word(srv_verbs->user_info));
 		if (numbers[0] == 6)
 			cli_ftp->dtp.sin = ftp_get_socket_address(
-				stoaddr(itoaddr(&(numbers[1]))), htons(itoaport(&(numbers[5]))));
+				stoaddr(itoaddr(&(numbers[1]))), htons(itoport(&(numbers[5]))));
 		else
 			error_print_exit(EXIT_FAILURE, "Unable to parse response server");
 	}

@@ -6,7 +6,7 @@
 /*   By: amineau <amineau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/19 12:47:47 by amineau           #+#    #+#             */
-/*   Updated: 2022/04/23 17:32:27 by amineau          ###   ########.fr       */
+/*   Updated: 2022/05/02 20:08:31 by amineau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@ static const char *cmd_str[] = {
 	[SYSTEM] = "SYST",
 	[PROTECTION_BUFFER_SIZE] = "PBSZ",
 	[PROTECTION] = "PROT",
+	[MODE] = "MODE",
+	[STRUCTURE] = "STRU",
 	[NOOP] = "NOOP",
 	NULL,
 };
